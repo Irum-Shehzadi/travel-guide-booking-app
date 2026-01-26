@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import Optional, List, Annotated
 from datetime import datetime
 from bson import ObjectId
+from enum import Enum
 
 # Pydantic v2 compatible ObjectId
 class PyObjectId(str):
@@ -60,6 +61,12 @@ class GuideRegistration(BaseModel):
     languages: List[str]
     specializations: List[str]
     certifications: Optional[str] = ""
+    profile_photo: str  # Required - URL/path to uploaded photo
+    password: str
+
+class GuideLogin(BaseModel):
+    email: EmailStr
+    password: str
 
 class GuideInDB(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
@@ -67,6 +74,7 @@ class GuideInDB(BaseModel):
     id: Optional[PyObjectId] = Field(default=None, alias="_id")
     fullName: str
     email: EmailStr
+    hashed_password: str
     phone: str
     city: str
     experience: int
@@ -80,6 +88,44 @@ class GuideInDB(BaseModel):
     rating: float = 0.0
     total_bookings: int = 0
 
+# Booking Status Enum
+class BookingStatus(str, Enum):
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+
+# Booking Models
+class BookingCreate(BaseModel):
+    guide_id: str
+    traveler_email: str
+    traveler_name: str
+    booking_date: str  # Format: YYYY-MM-DD
+    duration_days: int = 1
+    destination: str
+    special_requests: Optional[str] = ""
+    contact_phone: str
+
+class BookingUpdate(BaseModel):
+    status: BookingStatus
+
+class BookingInDB(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
+    
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
+    guide_id: str
+    guide_name: str
+    traveler_email: str
+    traveler_name: str
+    booking_date: str
+    duration_days: int = 1
+    destination: str
+    special_requests: Optional[str] = ""
+    contact_phone: str
+    status: BookingStatus = BookingStatus.PENDING
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: Optional[datetime] = None
+
 # Token Models
 class Token(BaseModel):
     access_token: str
@@ -87,3 +133,24 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: Optional[str] = None
+
+# Review Models
+class ReviewCreate(BaseModel):
+    guide_id: str
+    traveler_email: str
+    traveler_name: str
+    rating: int = Field(ge=1, le=5)  # 1-5 stars
+    comment: str
+    booking_id: Optional[str] = None
+
+class ReviewInDB(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
+    
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
+    guide_id: str
+    traveler_email: str
+    traveler_name: str
+    rating: int
+    comment: str
+    booking_id: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)

@@ -1,9 +1,14 @@
 from fastapi import APIRouter, HTTPException, status
-from models import GuideRegistration
+from models import GuideRegistration, GuideLogin
 from database import get_database
 from typing import List
+from utils import get_password_hash, verify_password, create_access_token
+from datetime import timedelta
+import os
 
 router = APIRouter(prefix="/api/guide", tags=["Guide"])
+
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def guide_registration(guide: GuideRegistration):
@@ -18,6 +23,9 @@ async def guide_registration(guide: GuideRegistration):
             detail="Email already registered"
         )
     
+    # Hash password
+    hashed_password = get_password_hash(guide.password)
+    
     # Create guide document
     guide_doc = {
         "fullName": guide.fullName,
@@ -29,24 +37,80 @@ async def guide_registration(guide: GuideRegistration):
         "languages": guide.languages,
         "specializations": guide.specializations,
         "certifications": guide.certifications,
+        "profile_photo": guide.profile_photo,
         "is_verified": False,  # Admin needs to verify
         "is_active": True,
         "rating": 0.0,
-        "total_bookings": 0
+        "total_bookings": 0,
+        "hashed_password": hashed_password
     }
     
     # Insert into database
     result = await db.guides.insert_one(guide_doc)
     
+    # Create access token
+    access_token = create_access_token(
+        data={"sub": guide.email},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    
     return {
-        "message": "Guide registration submitted successfully. We will review your application soon.",
+        "message": "Guide registration submitted successfully.",
         "guide": {
             "id": str(result.inserted_id),
             "fullName": guide.fullName,
             "email": guide.email,
             "city": guide.city,
             "is_verified": False
-        }
+        },
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
+@router.post("/login")
+async def guide_login(guide: GuideLogin):
+    """Login a guide"""
+    db = await get_database()
+    
+    # Find guide by email
+    guide_doc = await db.guides.find_one({"email": guide.email})
+    
+    if not guide_doc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    # Verify password
+    if not verify_password(guide.password, guide_doc.get("hashed_password", "")):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+    
+    # Check if account is active
+    if not guide_doc.get("is_active", True):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Account is deactivated"
+        )
+    
+    # Create access token
+    access_token = create_access_token(
+        data={"sub": guide.email},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+    
+    return {
+        "message": "Login successful",
+        "user": {
+            "id": str(guide_doc["_id"]),
+            "name": guide_doc["fullName"],
+            "email": guide_doc["email"],
+            "is_guide": True
+        },
+        "access_token": access_token,
+        "token_type": "bearer"
     }
 
 @router.get("/all")
@@ -69,7 +133,9 @@ async def get_all_guides():
             "languages": guide["languages"],
             "specializations": guide["specializations"],
             "rating": guide.get("rating", 0.0),
-            "total_bookings": guide.get("total_bookings", 0)
+            "total_bookings": guide.get("total_bookings", 0),
+            "profile_photo": guide.get("profile_photo"),
+            "is_verified": guide.get("is_verified", False)
         })
     
     return {"guides": guides_list, "total": len(guides_list)}

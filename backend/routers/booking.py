@@ -1,0 +1,268 @@
+from fastapi import APIRouter, HTTPException, status
+from models import BookingCreate, BookingUpdate, BookingStatus
+from database import get_database
+from datetime import datetime
+from bson import ObjectId
+
+router = APIRouter(prefix="/api/booking", tags=["Booking"])
+
+@router.post("/create", status_code=status.HTTP_201_CREATED)
+async def create_booking(booking: BookingCreate):
+    """Create a new booking"""
+    db = await get_database()
+    
+    # Verify guide exists
+    try:
+        guide = await db.guides.find_one({"_id": ObjectId(booking.guide_id)})
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid guide ID"
+        )
+    
+    if not guide:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Guide not found"
+        )
+    
+    if not guide.get("is_verified", False):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Guide is not verified yet"
+        )
+    
+    # Create booking document
+    booking_doc = {
+        "guide_id": booking.guide_id,
+        "guide_name": guide["fullName"],
+        "traveler_email": booking.traveler_email,
+        "traveler_name": booking.traveler_name,
+        "booking_date": booking.booking_date,
+        "duration_days": booking.duration_days,
+        "destination": booking.destination,
+        "special_requests": booking.special_requests,
+        "contact_phone": booking.contact_phone,
+        "status": BookingStatus.PENDING.value,
+        "created_at": datetime.utcnow(),
+        "updated_at": None
+    }
+    
+    # Insert into database
+    result = await db.bookings.insert_one(booking_doc)
+    
+    # Update guide's total bookings count
+    await db.guides.update_one(
+        {"_id": ObjectId(booking.guide_id)},
+        {"$inc": {"total_bookings": 1}}
+    )
+    
+    return {
+        "message": "Booking created successfully",
+        "booking": {
+            "id": str(result.inserted_id),
+            "guide_name": guide["fullName"],
+            "booking_date": booking.booking_date,
+            "destination": booking.destination,
+            "status": BookingStatus.PENDING.value
+        }
+    }
+
+@router.get("/traveler/{email}")
+async def get_traveler_bookings(email: str):
+    """Get all bookings for a traveler"""
+    db = await get_database()
+    
+    bookings = await db.bookings.find({"traveler_email": email}).sort("created_at", -1).to_list(length=100)
+    
+    bookings_list = []
+    for booking in bookings:
+        bookings_list.append({
+            "id": str(booking["_id"]),
+            "guide_id": booking["guide_id"],
+            "guide_name": booking["guide_name"],
+            "booking_date": booking["booking_date"],
+            "duration_days": booking.get("duration_days", 1),
+            "destination": booking["destination"],
+            "special_requests": booking.get("special_requests", ""),
+            "contact_phone": booking.get("contact_phone", ""),
+            "status": booking["status"],
+            "created_at": booking["created_at"].isoformat() if booking.get("created_at") else None
+        })
+    
+    return {"bookings": bookings_list, "total": len(bookings_list)}
+
+@router.get("/guide/{guide_id}")
+async def get_guide_bookings(guide_id: str):
+    """Get all bookings for a guide"""
+    db = await get_database()
+    
+    try:
+        # Verify guide exists
+        guide = await db.guides.find_one({"_id": ObjectId(guide_id)})
+        if not guide:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Guide not found"
+            )
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid guide ID"
+        )
+    
+    bookings = await db.bookings.find({"guide_id": guide_id}).sort("created_at", -1).to_list(length=100)
+    
+    bookings_list = []
+    for booking in bookings:
+        bookings_list.append({
+            "id": str(booking["_id"]),
+            "traveler_name": booking["traveler_name"],
+            "traveler_email": booking["traveler_email"],
+            "booking_date": booking["booking_date"],
+            "duration_days": booking.get("duration_days", 1),
+            "destination": booking["destination"],
+            "special_requests": booking.get("special_requests", ""),
+            "contact_phone": booking.get("contact_phone", ""),
+            "status": booking["status"],
+            "created_at": booking["created_at"].isoformat() if booking.get("created_at") else None
+        })
+    
+    return {"bookings": bookings_list, "total": len(bookings_list)}
+
+@router.get("/guide-email/{email}")
+async def get_guide_bookings_by_email(email: str):
+    """Get all bookings for a guide by email"""
+    db = await get_database()
+    
+    # Find guide by email first
+    guide = await db.guides.find_one({"email": email})
+    if not guide:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Guide user not found"
+        )
+    
+    guide_id = str(guide["_id"])
+    
+    bookings = await db.bookings.find({"guide_id": guide_id}).sort("created_at", -1).to_list(length=100)
+    
+    bookings_list = []
+    for booking in bookings:
+        bookings_list.append({
+            "id": str(booking["_id"]),
+            "traveler_name": booking["traveler_name"],
+            "traveler_email": booking["traveler_email"],
+            "booking_date": booking["booking_date"],
+            "duration_days": booking.get("duration_days", 1),
+            "destination": booking["destination"],
+            "special_requests": booking.get("special_requests", ""),
+            "contact_phone": booking.get("contact_phone", ""),
+            "status": booking["status"],
+            "created_at": booking["created_at"].isoformat() if booking.get("created_at") else None
+        })
+    
+    return {"bookings": bookings_list, "total": len(bookings_list)}
+
+@router.put("/{booking_id}/status")
+async def update_booking_status(booking_id: str, update: BookingUpdate):
+    """Update booking status (confirm, cancel, complete)"""
+    db = await get_database()
+    
+    try:
+        booking = await db.bookings.find_one({"_id": ObjectId(booking_id)})
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid booking ID"
+        )
+    
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found"
+        )
+    
+    # Update the booking status
+    result = await db.bookings.update_one(
+        {"_id": ObjectId(booking_id)},
+        {
+            "$set": {
+                "status": update.status.value,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+    
+    return {
+        "message": f"Booking status updated to {update.status.value}",
+        "booking_id": booking_id,
+        "new_status": update.status.value
+    }
+
+@router.get("/{booking_id}")
+async def get_booking_details(booking_id: str):
+    """Get booking details by ID"""
+    db = await get_database()
+    
+    try:
+        booking = await db.bookings.find_one({"_id": ObjectId(booking_id)})
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid booking ID"
+        )
+    
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found"
+        )
+    
+    return {
+        "id": str(booking["_id"]),
+        "guide_id": booking["guide_id"],
+        "guide_name": booking["guide_name"],
+        "traveler_name": booking["traveler_name"],
+        "traveler_email": booking["traveler_email"],
+        "booking_date": booking["booking_date"],
+        "duration_days": booking.get("duration_days", 1),
+        "destination": booking["destination"],
+        "special_requests": booking.get("special_requests", ""),
+        "contact_phone": booking.get("contact_phone", ""),
+        "status": booking["status"],
+        "created_at": booking["created_at"].isoformat() if booking.get("created_at") else None,
+        "updated_at": booking["updated_at"].isoformat() if booking.get("updated_at") else None
+    }
+
+@router.delete("/{booking_id}")
+async def cancel_booking(booking_id: str):
+    """Cancel/delete a booking"""
+    db = await get_database()
+    
+    try:
+        booking = await db.bookings.find_one({"_id": ObjectId(booking_id)})
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid booking ID"
+        )
+    
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found"
+        )
+    
+    # Update status to cancelled instead of deleting
+    await db.bookings.update_one(
+        {"_id": ObjectId(booking_id)},
+        {
+            "$set": {
+                "status": BookingStatus.CANCELLED.value,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+    
+    return {"message": "Booking cancelled successfully", "booking_id": booking_id}

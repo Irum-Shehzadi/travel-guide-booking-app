@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import connect_to_mongo, close_mongo_connection
-from routers import traveler, guide
+from routers import traveler, guide, booking, review, contact, upload, weather
 
 app = FastAPI(
     title="Travel Booking API",
@@ -12,27 +12,33 @@ app = FastAPI(
 # CORS Middleware - Frontend se connect karne ke liye
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # React app URLs
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173", "http://localhost:5174", "http://localhost:5175"],  # React/Vite app URLs
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Startup event - MongoDB connection
 @app.on_event("startup")
 async def startup_db_client():
     await connect_to_mongo()
-    print("✅ Application started successfully!")
+    print("Application started successfully!")
 
 # Shutdown event - Close MongoDB connection
 @app.on_event("shutdown")
 async def shutdown_db_client():
     await close_mongo_connection()
-    print("❌ Application shut down")
+    print("Application shut down")
 
 # Include routers
 app.include_router(traveler.router)
 app.include_router(guide.router)
+app.include_router(booking.router)
+app.include_router(review.router)
+app.include_router(contact.router)
+app.include_router(upload.router)
+app.include_router(weather.router)
 
 # Root endpoint
 @app.get("/")

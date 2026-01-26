@@ -118,4 +118,4 @@ async def get_traveler_profile(email: str):
         "email": traveler["email"],
         "created_at": traveler.get("created_at"),
         "is_active": traveler.get("is_active", True)
-    }
+    } 

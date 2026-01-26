@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { User, Mail, Phone, MapPin, Briefcase, FileText, Upload, Award, CheckCircle, ArrowRight, Camera, Shield, Star, Clock } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Briefcase, FileText, Upload, Award, CheckCircle, ArrowRight, Camera, Shield, Star, Clock, Lock, Loader2, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const API_BASE_URL = "http://localhost:8000";
 
 const GuideRegistration = () => {
   const [step, setStep] = useState(1);
@@ -8,14 +11,18 @@ const GuideRegistration = () => {
     email: '',
     phone: '',
     city: '',
+    password: '',
     experience: '',
     about: '',
     languages: [],
     specializations: [],
-    certifications: ''
+    certifications: '',
+    profile_photo: null // Will store the uploaded photo URL
   });
   const [focused, setFocused] = useState('');
   const [loading, setLoading] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [error, setError] = useState('');
 
   const languages = ['English', 'Urdu', 'Punjabi', 'Pashto', 'Sindhi', 'Balochi'];
@@ -26,6 +33,68 @@ const GuideRegistration = () => {
       ? array.filter(i => i !== item)
       : [...array, item];
     setFormData({ ...formData, [field]: newArray });
+  };
+
+  // Handle profile photo upload
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+
+    // Show preview immediately
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    // Upload to server
+    setUploadingPhoto(true);
+    setError('');
+
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const response = await fetch(`${API_BASE_URL}/api/upload/image`, {
+        method: 'POST',
+        body: uploadFormData
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Store the URL in formData
+        setFormData(prev => ({ ...prev, profile_photo: data.url }));
+      } else {
+        setError(data.detail || 'Failed to upload photo');
+        setPhotoPreview(null);
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError('Network error. Please try again.');
+      setPhotoPreview(null);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  // Remove uploaded photo
+  const removePhoto = () => {
+    setFormData(prev => ({ ...prev, profile_photo: null }));
+    setPhotoPreview(null);
   };
 
   const handleSubmit = async () => {
@@ -50,6 +119,12 @@ const GuideRegistration = () => {
       return;
     }
 
+    // Validate profile photo is uploaded
+    if (!formData.profile_photo) {
+      setError('Please upload your profile photo');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -64,11 +139,13 @@ const GuideRegistration = () => {
           email: formData.email,
           phone: formData.phone,
           city: formData.city,
+          password: formData.password,
           experience: parseInt(formData.experience),
           about: formData.about,
           languages: formData.languages,
           specializations: formData.specializations,
-          certifications: formData.certifications
+          certifications: formData.certifications,
+          profile_photo: formData.profile_photo
         })
       });
 
@@ -77,18 +154,20 @@ const GuideRegistration = () => {
       if (response.ok) {
         console.log('Registration successful:', data);
         alert('Registration Complete! ✅\n\nThank you for registering as a guide. We will review your application and contact you soon via email.');
-        // Reset form
         setFormData({
           fullName: '',
           email: '',
           phone: '',
           city: '',
+          password: '',
           experience: '',
           about: '',
           languages: [],
           specializations: [],
-          certifications: ''
+          certifications: '',
+          profile_photo: null
         });
+        setPhotoPreview(null);
         setStep(1);
       } else {
         setError(data.detail || 'Registration failed. Please try again.');
@@ -103,9 +182,9 @@ const GuideRegistration = () => {
 
   const handleNext = () => {
     setError('');
-    
+
     if (step === 1) {
-      if (!formData.fullName || !formData.email || !formData.phone || !formData.city || !formData.about) {
+      if (!formData.fullName || !formData.email || !formData.phone || !formData.city || !formData.about || !formData.password) {
         setError('Please fill all required fields');
         return;
       }
@@ -115,7 +194,7 @@ const GuideRegistration = () => {
         return;
       }
     }
-    
+
     setStep(step + 1);
   };
 
@@ -138,17 +217,15 @@ const GuideRegistration = () => {
           <div className="flex items-center justify-between mb-4">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center flex-1">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold transition-all duration-300 ${
-                  step >= s 
-                    ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-110' 
-                    : 'bg-gray-200 text-gray-500'
-                }`}>
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold transition-all duration-300 ${step >= s
+                  ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-110'
+                  : 'bg-gray-200 text-gray-500'
+                  }`}>
                   {step > s ? <CheckCircle className="w-6 h-6" /> : s}
                 </div>
                 {s < 3 && (
-                  <div className={`flex-1 h-1 mx-2 rounded-full transition-all duration-300 ${
-                    step > s ? 'bg-linear-to-r from-blue-600 to-purple-600' : 'bg-gray-200'
-                  }`} />
+                  <div className={`flex-1 h-1 mx-2 rounded-full transition-all duration-300 ${step > s ? 'bg-linear-to-r from-blue-600 to-purple-600' : 'bg-gray-200'
+                    }`} />
                 )}
               </div>
             ))}
@@ -187,7 +264,7 @@ const GuideRegistration = () => {
                     <input
                       type="text"
                       value={formData.fullName}
-                      onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                       onFocus={() => setFocused('name')}
                       onBlur={() => setFocused('')}
                       placeholder="Enter your full name"
@@ -203,7 +280,7 @@ const GuideRegistration = () => {
                     <input
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       onFocus={() => setFocused('email')}
                       onBlur={() => setFocused('')}
                       placeholder="your.email@example.com"
@@ -219,7 +296,7 @@ const GuideRegistration = () => {
                     <input
                       type="tel"
                       value={formData.phone}
-                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                       onFocus={() => setFocused('phone')}
                       onBlur={() => setFocused('')}
                       placeholder="+92 300 1234567"
@@ -235,13 +312,30 @@ const GuideRegistration = () => {
                     <input
                       type="text"
                       value={formData.city}
-                      onChange={(e) => setFormData({...formData, city: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                       onFocus={() => setFocused('city')}
                       onBlur={() => setFocused('')}
                       placeholder="Your city"
                       className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300"
                     />
                   </div>
+                </div>
+
+                <div className={`relative transition-all duration-300 ${focused === 'password' ? 'transform scale-[1.02]' : ''}`}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                  <div className={`absolute left-4 top-[46px] transition-colors duration-300 ${focused === 'password' ? 'text-blue-600' : 'text-gray-400'}`}>
+                    <div className="w-5 h-5" />
+                    {/* Using div placeholder or lock icon if available, assumed imports */}
+                  </div>
+                  <input
+                    type="password"
+                    value={formData.password || ''}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onFocus={() => setFocused('password')}
+                    onBlur={() => setFocused('')}
+                    placeholder="Create a strong password"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300"
+                  />
                 </div>
 
                 <div className={`relative transition-all duration-300 ${focused === 'about' ? 'transform scale-[1.02]' : ''}`}>
@@ -251,7 +345,7 @@ const GuideRegistration = () => {
                   </div>
                   <textarea
                     value={formData.about}
-                    onChange={(e) => setFormData({...formData, about: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, about: e.target.value })}
                     onFocus={() => setFocused('about')}
                     onBlur={() => setFocused('')}
                     placeholder="Tell us about your experience, passion for tourism, and why you want to be a guide..."
@@ -278,7 +372,7 @@ const GuideRegistration = () => {
                   <input
                     type="number"
                     value={formData.experience}
-                    onChange={(e) => setFormData({...formData, experience: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
                     onFocus={() => setFocused('experience')}
                     onBlur={() => setFocused('')}
                     placeholder="e.g., 5"
@@ -295,11 +389,10 @@ const GuideRegistration = () => {
                         key={lang}
                         type="button"
                         onClick={() => toggleSelection(formData.languages, lang, 'languages')}
-                        className={`p-3 rounded-xl border-2 font-medium transition-all duration-300 ${
-                          formData.languages.includes(lang)
-                            ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white border-transparent shadow-lg scale-105'
-                            : 'bg-white text-gray-700 border-gray-200 hover:border-blue-500 hover:bg-blue-50'
-                        }`}
+                        className={`p-3 rounded-xl border-2 font-medium transition-all duration-300 ${formData.languages.includes(lang)
+                          ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white border-transparent shadow-lg scale-105'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-blue-500 hover:bg-blue-50'
+                          }`}
                       >
                         {lang}
                       </button>
@@ -315,11 +408,10 @@ const GuideRegistration = () => {
                         key={spec}
                         type="button"
                         onClick={() => toggleSelection(formData.specializations, spec, 'specializations')}
-                        className={`p-4 rounded-xl border-2 font-medium text-left transition-all duration-300 ${
-                          formData.specializations.includes(spec)
-                            ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white border-transparent shadow-lg scale-[1.02]'
-                            : 'bg-white text-gray-700 border-gray-200 hover:border-blue-500 hover:bg-blue-50'
-                        }`}
+                        className={`p-4 rounded-xl border-2 font-medium text-left transition-all duration-300 ${formData.specializations.includes(spec)
+                          ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white border-transparent shadow-lg scale-[1.02]'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-blue-500 hover:bg-blue-50'
+                          }`}
                       >
                         {spec}
                       </button>
@@ -338,16 +430,62 @@ const GuideRegistration = () => {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6">
-                  {/* Profile Photo */}
-                  <div className="bg-linear-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-dashed border-blue-300 hover:border-blue-500 transition-all cursor-pointer group">
-                    <input type="file" id="photo" className="hidden" accept="image/*" />
-                    <label htmlFor="photo" className="cursor-pointer flex flex-col items-center">
-                      <div className="bg-white p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
-                        <Camera className="w-8 h-8 text-blue-600" />
+                  {/* Profile Photo - MANDATORY */}
+                  <div className={`relative rounded-2xl p-6 border-2 border-dashed transition-all ${photoPreview
+                      ? 'border-green-400 bg-green-50'
+                      : 'border-red-400 bg-linear-to-br from-blue-50 to-purple-50 hover:border-blue-500'
+                    }`}>
+                    <input
+                      type="file"
+                      id="photo"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      disabled={uploadingPhoto}
+                    />
+
+                    {photoPreview ? (
+                      <div className="flex flex-col items-center">
+                        <div className="relative">
+                          <img
+                            src={photoPreview}
+                            alt="Profile Preview"
+                            className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={removePhoto}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                          {formData.profile_photo && (
+                            <div className="absolute -bottom-1 -right-1 bg-green-500 text-white p-1 rounded-full">
+                              <CheckCircle className="w-4 h-4" />
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-green-600 font-medium mt-3">Photo Uploaded ✓</p>
+                        <label htmlFor="photo" className="text-sm text-blue-600 cursor-pointer hover:underline mt-1">
+                          Change Photo
+                        </label>
                       </div>
-                      <p className="text-gray-700 font-medium mb-1">Profile Photo</p>
-                      <p className="text-gray-500 text-sm text-center">Click to upload your photo</p>
-                    </label>
+                    ) : uploadingPhoto ? (
+                      <div className="flex flex-col items-center py-4">
+                        <Loader2 className="w-8 h-8 text-blue-600 animate-spin mb-3" />
+                        <p className="text-gray-600">Uploading...</p>
+                      </div>
+                    ) : (
+                      <label htmlFor="photo" className="cursor-pointer flex flex-col items-center group">
+                        <div className="bg-white p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
+                          <Camera className="w-8 h-8 text-blue-600" />
+                        </div>
+                        <p className="text-gray-700 font-medium mb-1">
+                          Profile Photo <span className="text-red-500">*</span>
+                        </p>
+                        <p className="text-gray-500 text-sm text-center">Click to upload (Required)</p>
+                      </label>
+                    )}
                   </div>
 
                   {/* ID Card */}
@@ -370,7 +508,7 @@ const GuideRegistration = () => {
                   </div>
                   <textarea
                     value={formData.certifications}
-                    onChange={(e) => setFormData({...formData, certifications: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, certifications: e.target.value })}
                     onFocus={() => setFocused('certifications')}
                     onBlur={() => setFocused('')}
                     placeholder="List any tourism certifications, training programs, or relevant qualifications..."
@@ -434,8 +572,11 @@ const GuideRegistration = () => {
 
         {/* Footer Info */}
         <div className="mt-8 text-center">
-          <p className="text-gray-500 text-sm flex items-center justify-center gap-1">
+          <p className="text-gray-500 text-sm flex items-center justify-center gap-1 mb-4">
             Registration takes approximately <Clock className="w-4 h-4" /> 5-10 minutes
+          </p>
+          <p className="text-gray-600">
+            Already registered? <Link to="/guide-login" className="text-blue-600 font-semibold hover:underline">Log In here</Link>
           </p>
         </div>
       </div>
