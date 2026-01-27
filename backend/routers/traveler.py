@@ -14,7 +14,7 @@ async def traveler_signup(traveler: TravelerSignup):
     """Register a new traveler"""
     db = await get_database()
     
-    # Check if email already exists
+   
     existing_traveler = await db.travelers.find_one({"email": traveler.email})
     if existing_traveler:
         raise HTTPException(
@@ -22,10 +22,10 @@ async def traveler_signup(traveler: TravelerSignup):
             detail="Email already registered"
         )
     
-    # Hash password
+   
     hashed_password = get_password_hash(traveler.password)
     
-    # Create traveler document
+  
     traveler_doc = {
         "name": traveler.name,
         "email": traveler.email,
@@ -34,10 +34,10 @@ async def traveler_signup(traveler: TravelerSignup):
         "is_active": True
     }
     
-    # Insert into database
+    
     result = await db.travelers.insert_one(traveler_doc)
     
-    # Create access token
+    
     access_token = create_access_token(
         data={"sub": traveler.email},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -59,7 +59,7 @@ async def traveler_login(traveler: TravelerLogin):
     """Login a traveler"""
     db = await get_database()
     
-    # Find traveler by email
+   
     traveler_doc = await db.travelers.find_one({"email": traveler.email})
     
     if not traveler_doc:
@@ -68,21 +68,21 @@ async def traveler_login(traveler: TravelerLogin):
             detail="Invalid email or password"
         )
     
-    # Verify password
+   
     if not verify_password(traveler.password, traveler_doc["hashed_password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
     
-    # Check if account is active
+   
     if not traveler_doc.get("is_active", True):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is deactivated"
         )
     
-    # Create access token
+   
     access_token = create_access_token(
         data={"sub": traveler.email},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

@@ -1,10 +1,10 @@
-# 🌍 Pakistan Travel Guide Booking Platform
+# Pakistan Travel Guide Booking Platform
 
 A full-stack web application for booking local travel guides across Pakistan. Travelers can explore destinations, book guides, and leave reviews.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
@@ -15,33 +15,33 @@ A full-stack web application for booking local travel guides across Pakistan. Tr
 
 ---
 
-## ✨ Features
+## Features
 
 ### For Travelers
-- ✅ Sign up / Login with JWT authentication
-- ✅ Browse 50+ Pakistan destinations with detailed info
-- ✅ View real-time weather for any destination
-- ✅ Search and filter travel guides
-- ✅ Book guides for trips
-- ✅ Leave reviews and ratings for guides
-- ✅ Personal dashboard to manage bookings
+- Sign up / Login with JWT authentication
+- Browse 50+ Pakistan destinations with detailed info
+- View real-time weather for any destination
+- Search and filter travel guides
+- Book guides for trips
+- Leave reviews and ratings for guides
+- Personal dashboard to manage bookings
 
 ### For Guides
-- ✅ Register with profile photo upload
-- ✅ Set availability and pricing
-- ✅ Receive and manage booking requests
-- ✅ View earnings and reviews
-- ✅ Personal dashboard
+- Register with profile photo upload
+- Set availability and pricing
+- Receive and manage booking requests
+- View earnings and reviews
+- Personal dashboard
 
 ### General
-- ✅ Contact form for inquiries
-- ✅ Admin message management
-- ✅ Protected routes (authentication required)
-- ✅ Responsive design
+- Contact form for inquiries
+- Admin message management
+- Protected routes (authentication required)
+- Responsive design
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
 | Technology | Purpose |
@@ -66,7 +66,7 @@ A full-stack web application for booking local travel guides across Pakistan. Tr
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 fyp-1/
@@ -120,7 +120,7 @@ fyp-1/
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ### Prerequisites
 - Python 3.10+
@@ -168,7 +168,7 @@ Frontend runs on: **http://localhost:5173**
 
 ---
 
-## 🔌 API Endpoints
+## API Endpoints
 
 ### Traveler Routes (`/api/traveler`)
 | Method | Endpoint | Description |
@@ -214,7 +214,7 @@ Frontend runs on: **http://localhost:5173**
 
 ---
 
-## 📱 Frontend Pages
+## Frontend Pages
 
 | Page | Route | Description |
 |------|-------|-------------|
@@ -231,7 +231,7 @@ Frontend runs on: **http://localhost:5173**
 
 ---
 
-## 🗄️ Database Schema
+## Database Schema
 
 ### Collections
 
@@ -293,7 +293,7 @@ Frontend runs on: **http://localhost:5173**
 
 ---
 
-## 🌤️ Weather Feature
+## Weather Feature
 
 Real-time weather for 40+ Pakistani cities using Open-Meteo API:
 
@@ -307,7 +307,7 @@ Real-time weather for 40+ Pakistani cities using Open-Meteo API:
 
 ---
 
-## 👨‍💻 Development
+## Development
 
 ```bash
 # Run backend (from backend folder)
@@ -322,7 +322,7 @@ http://localhost:8000/docs
 
 ---
 
-## 📝 Environment Variables (Optional)
+## Environment Variables (Optional)
 
 Create `.env` file in backend folder:
 
@@ -337,10 +337,10 @@ CLOUDINARY_API_SECRET=your-api-secret
 
 ---
 
-## 📄 License
+## License
 
 This project is part of FYP (Final Year Project).
 
 ---
 
-**Made with ❤️ for Pakistan Tourism**
+**Made for Pakistan Tourism**

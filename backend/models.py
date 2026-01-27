@@ -4,7 +4,7 @@ from datetime import datetime
 from bson import ObjectId
 from enum import Enum
 
-# Pydantic v2 compatible ObjectId
+# Pydantic
 class PyObjectId(str):
     @classmethod
     def __get_pydantic_core_schema__(cls, _source_type, _handler):
@@ -88,7 +88,7 @@ class GuideInDB(BaseModel):
     rating: float = 0.0
     total_bookings: int = 0
 
-# Booking Status Enum
+# Booking Status 
 class BookingStatus(str, Enum):
     PENDING = "pending"
     CONFIRMED = "confirmed"

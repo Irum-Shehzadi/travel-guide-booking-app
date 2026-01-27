@@ -15,7 +15,7 @@ async def guide_registration(guide: GuideRegistration):
     """Register a new guide"""
     db = await get_database()
     
-    # Check if email already exists
+    # Check if email exists
     existing_guide = await db.guides.find_one({"email": guide.email})
     if existing_guide:
         raise HTTPException(
@@ -23,10 +23,10 @@ async def guide_registration(guide: GuideRegistration):
             detail="Email already registered"
         )
     
-    # Hash password
+    
     hashed_password = get_password_hash(guide.password)
     
-    # Create guide document
+   
     guide_doc = {
         "fullName": guide.fullName,
         "email": guide.email,
@@ -45,10 +45,10 @@ async def guide_registration(guide: GuideRegistration):
         "hashed_password": hashed_password
     }
     
-    # Insert into database
+  
     result = await db.guides.insert_one(guide_doc)
     
-    # Create access token
+    
     access_token = create_access_token(
         data={"sub": guide.email},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -72,7 +72,7 @@ async def guide_login(guide: GuideLogin):
     """Login a guide"""
     db = await get_database()
     
-    # Find guide by email
+   
     guide_doc = await db.guides.find_one({"email": guide.email})
     
     if not guide_doc:
@@ -81,21 +81,20 @@ async def guide_login(guide: GuideLogin):
             detail="Invalid email or password"
         )
     
-    # Verify password
+  
     if not verify_password(guide.password, guide_doc.get("hashed_password", "")):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
     
-    # Check if account is active
     if not guide_doc.get("is_active", True):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is deactivated"
         )
     
-    # Create access token
+    
     access_token = create_access_token(
         data={"sub": guide.email},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)

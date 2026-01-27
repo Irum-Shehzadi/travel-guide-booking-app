@@ -9,7 +9,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS Middleware - Frontend se connect karne ke liye
+# CORS Middleware 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173", "http://localhost:5174", "http://localhost:5175"],  # React/Vite app URLs
@@ -19,13 +19,13 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Startup event - MongoDB connection
+# Startup event 
 @app.on_event("startup")
 async def startup_db_client():
     await connect_to_mongo()
     print("Application started successfully!")
 
-# Shutdown event - Close MongoDB connection
+# Shutdown event 
 @app.on_event("shutdown")
 async def shutdown_db_client():
     await close_mongo_connection()
@@ -53,7 +53,7 @@ async def root():
         }
     }
 
-# Health check endpoint
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "database": "connected"}
