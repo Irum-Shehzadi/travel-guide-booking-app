@@ -26,6 +26,12 @@ const BookingForm = ({ guide, isOpen, onClose, onSuccess }) => {
             return;
         }
 
+        // Prevent guides from making bookings
+        if (user?.type === 'guide') {
+            setError('Guides cannot make bookings. Only travelers can book guides.');
+            return;
+        }
+
         if (!formData.booking_date || !formData.destination || !formData.contact_phone) {
             setError('Please fill all required fields');
             return;

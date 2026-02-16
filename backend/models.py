@@ -154,3 +154,25 @@ class ReviewInDB(BaseModel):
     comment: str
     booking_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+# Places API Models
+class PlaceSearchRequest(BaseModel):
+    query: str
+    location: str = "Pakistan"
+    gl: str = "pk"
+    num: int = Field(default=10, le=20)
+
+class PlaceResult(BaseModel):
+    position: int
+    title: str
+    address: str
+    latitude: float
+    longitude: float
+    phone_number: Optional[str] = None
+    website: Optional[str] = None
+    cid: Optional[str] = None
+
+class PlacesSearchResponse(BaseModel):
+    places: List[PlaceResult]
+    search_params: dict
+    credits: Optional[int] = None

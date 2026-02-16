@@ -29,23 +29,43 @@ const Navbar = () => {
           <Link to="/">Home</Link>
         </li>
 
-        {/* Simple Destination Link (no dropdown) */}
+        {/* Destinations - Available to both guides and travelers */}
         <li className="cursor-pointer hover:text-blue-600">
           <Link to="/pakistan-destinations">Destinations</Link>
         </li>
 
+        {/* Places Explorer - NEW */}
         <li className="cursor-pointer hover:text-blue-600">
-          <Link to="/guide-booking">Guide Booking</Link>
+          <Link to="/places-explorer">Explore Places</Link>
         </li>
+
+        {/* Guide Booking - Only for travelers */}
+        {(!isAuthenticated || user?.type === 'traveler') && (
+          <li className="cursor-pointer hover:text-blue-600">
+            <Link to="/guide-booking">Guide Booking</Link>
+          </li>
+        )}
+
+        {/* Reviews - Show for both but with different access */}
         <li className="cursor-pointer hover:text-blue-600">
-          <Link to="/review">Review</Link>
+          <Link to="/review">
+            {user?.type === 'guide' ? 'My Reviews' : 'Reviews'}
+          </Link>
         </li>
+
         <li className="cursor-pointer hover:text-blue-600">
           <Link to="/about">About</Link>
         </li>
         <li className="cursor-pointer hover:text-blue-600">
           <Link to="/contact">Contact</Link>
         </li>
+
+        {/* Guide Profile - Only for guides */}
+        {isAuthenticated && user?.type === 'guide' && (
+          <li className="cursor-pointer hover:text-blue-600">
+            <Link to="/guide-profile">My Profile</Link>
+          </li>
+        )}
       </ul>
 
       {/* Right Buttons */}

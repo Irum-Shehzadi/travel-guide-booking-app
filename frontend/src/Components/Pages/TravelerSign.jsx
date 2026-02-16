@@ -25,6 +25,12 @@ const TravelerSign = () => {
     setError('');
 
     try {
+      console.log('Sending signup request with data:', {
+        name: formData.name,
+        email: formData.email,
+        password: '***' // Don't log actual password
+      });
+
       const response = await fetch('http://localhost:8000/api/traveler/signup', {
         method: 'POST',
         headers: {
@@ -37,18 +43,21 @@ const TravelerSign = () => {
         })
       });
 
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (response.ok) {
         // Success!
         console.log('Signup successful:', data);
         login({ ...data.user, type: 'traveler' }, data.access_token);
-        navigate('/'); // Redirect to home
+        navigate('/traveler-dashboard'); // Redirect to traveler dashboard
       } else {
-        setError(data.detail || 'Signup failed');
+        console.error('Signup failed:', data);
+        setError(data.detail || data.message || 'Signup failed');
       }
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Signup error:', err);
       setError('Network error. Please check if backend is running.');
     } finally {
       setLoading(false);
@@ -66,6 +75,8 @@ const TravelerSign = () => {
     setError('');
 
     try {
+      console.log('Sending login request with email:', formData.email);
+
       const response = await fetch('http://localhost:8000/api/traveler/login', {
         method: 'POST',
         headers: {
@@ -77,18 +88,21 @@ const TravelerSign = () => {
         })
       });
 
+      console.log('Login response status:', response.status);
       const data = await response.json();
+      console.log('Login response data:', data);
 
       if (response.ok) {
         // Success!
         console.log('Login successful:', data);
         login({ ...data.user, type: 'traveler' }, data.access_token);
-        navigate('/'); // Redirect to home
+        navigate('/traveler-dashboard'); // Redirect to traveler dashboard
       } else {
-        setError(data.detail || 'Login failed');
+        console.error('Login failed:', data);
+        setError(data.detail || data.message || 'Login failed');
       }
     } catch (err) {
-      console.error('Error:', err);
+      console.error('Login error:', err);
       setError('Network error. Please check if backend is running.');
     } finally {
       setLoading(false);
@@ -109,13 +123,13 @@ const TravelerSign = () => {
     <div className="min-h-screen flex">
       {/* Left Side - Image & Branding */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-linear-to-br from-blue-600 via-purple-600 to-pink-600 overflow-hidden">
-        {/* Animated Background Elements */}
+        {/* Animated Background Elements 
         <div className="absolute inset-0">
           <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse" />
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
           <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
         </div>
-
+*/}
         {/* Floating Icons */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 animate-bounce" style={{ animationDuration: '3s' }}>

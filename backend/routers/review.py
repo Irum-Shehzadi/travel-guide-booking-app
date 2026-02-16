@@ -154,6 +154,40 @@ async def get_traveler_reviews(email: str):
     
     return {"reviews": reviews_list, "total": len(reviews_list)}
 
+@router.get("/guide-email/{email}")
+async def get_guide_reviews_by_email(email: str):
+    """Get all reviews for a guide by their email"""
+    db = await get_database()
+    
+    # First, find the guide by email
+    guide = await db.guides.find_one({"email": email})
+    
+    if not guide:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Guide not found"
+        )
+    
+    guide_id = str(guide["_id"])
+    
+    # Get all reviews for this guide
+    reviews = await db.reviews.find({"guide_id": guide_id}).sort("created_at", -1).to_list(length=100)
+    
+    reviews_list = []
+    for review in reviews:
+        reviews_list.append({
+            "id": str(review["_id"]),
+            "guide_id": review["guide_id"],
+            "guide_name": review.get("guide_name", guide["fullName"]),
+            "traveler_name": review["traveler_name"],
+            "rating": review["rating"],
+            "comment": review["comment"],
+            "booking_id": review.get("booking_id"),
+            "created_at": review["created_at"].isoformat() if review.get("created_at") else None
+        })
+    
+    return {"reviews": reviews_list, "total": len(reviews_list)}
+
 @router.delete("/{review_id}")
 async def delete_review(review_id: str, email: str):
     """Delete a review (only by the reviewer)"""

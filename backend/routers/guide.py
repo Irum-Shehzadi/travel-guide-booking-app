@@ -15,7 +15,7 @@ async def guide_registration(guide: GuideRegistration):
     """Register a new guide"""
     db = await get_database()
     
-    # Check if email exists
+   
     existing_guide = await db.guides.find_one({"email": guide.email})
     if existing_guide:
         raise HTTPException(
@@ -173,6 +173,38 @@ async def get_guide_by_id(guide_id: str):
         "rating": guide.get("rating", 0.0),
         "total_bookings": guide.get("total_bookings", 0),
         "is_verified": guide.get("is_verified", False)
+    }
+
+@router.get("/email/{email}")
+async def get_guide_by_email(email: str):
+    """Get guide details by email"""
+    db = await get_database()
+    
+    guide = await db.guides.find_one({"email": email})
+    
+    if not guide:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Guide not found"
+        )
+    
+    return {
+        "guide": {
+            "id": str(guide["_id"]),
+            "fullName": guide["fullName"],
+            "email": guide["email"],
+            "phone": guide["phone"],
+            "city": guide["city"],
+            "experience": guide["experience"],
+            "about": guide["about"],
+            "languages": guide["languages"],
+            "specializations": guide["specializations"],
+            "certifications": guide.get("certifications", ""),
+            "profile_photo": guide.get("profile_photo"),
+            "rating": guide.get("rating", 0.0),
+            "total_bookings": guide.get("total_bookings", 0),
+            "is_verified": guide.get("is_verified", False)
+        }
     }
 
 @router.get("/search/city/{city}")

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import connect_to_mongo, close_mongo_connection
-from routers import traveler, guide, booking, review, contact, upload, weather
+from routers import traveler, guide, booking, review, contact, upload, weather, places
 
 app = FastAPI(
     title="Travel Booking API",
@@ -18,6 +18,25 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+# Validation Error Handler - Show detailed 422 errors
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    print(f"\n[VALIDATION ERROR] Request to {request.url}")
+    print(f"[VALIDATION ERROR] Errors: {exc.errors()}")
+    print(f"[VALIDATION ERROR] Body: {exc.body if hasattr(exc, 'body') else 'N/A'}\n")
+    
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": exc.errors(),
+            "message": "Validation failed - check the fields below",
+            "body_received": str(exc.body) if hasattr(exc, 'body') else None
+        }
+    )
 
 # Startup event 
 @app.on_event("startup")
@@ -39,6 +58,7 @@ app.include_router(review.router)
 app.include_router(contact.router)
 app.include_router(upload.router)
 app.include_router(weather.router)
+app.include_router(places.router)
 
 # Root endpoint
 @app.get("/")

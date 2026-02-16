@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Star, User, MapPin, Calendar, Loader2, MessageSquare, Award } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const API_BASE_URL = "http://localhost:8000";
 
 const Review = () => {
+  const { user, isAuthenticated } = useAuth();
   const [selectedRating, setSelectedRating] = useState("all");
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,14 +16,21 @@ const Review = () => {
   // Fetch reviews from API
   useEffect(() => {
     fetchReviews();
-  }, []);
+  }, [user]);
 
   const fetchReviews = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${API_BASE_URL}/api/review/all`);
+      let endpoint = `${API_BASE_URL}/api/review/all`;
+
+      // If user is a guide, fetch only their reviews
+      if (isAuthenticated && user?.type === 'guide') {
+        endpoint = `${API_BASE_URL}/api/review/guide-email/${user.email}`;
+      }
+
+      const response = await fetch(endpoint);
 
       if (!response.ok) {
         throw new Error('Failed to fetch reviews');
@@ -61,9 +70,14 @@ const Review = () => {
       {/* HEADER */}
       <div className="bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 text-white">
         <div className="max-w-6xl mx-auto px-6 py-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">Traveler Reviews</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">
+            {user?.type === 'guide' ? 'My Reviews' : 'Traveler Reviews'}
+          </h1>
           <p className="text-blue-100 text-lg max-w-2xl">
-            Honest feedback shared by real travelers about guides, destinations, and experiences.
+            {user?.type === 'guide'
+              ? 'Reviews and feedback from travelers who booked your services.'
+              : 'Honest feedback shared by real travelers about guides, destinations, and experiences.'
+            }
           </p>
 
           {/* Stats */}

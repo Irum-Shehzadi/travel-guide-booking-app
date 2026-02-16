@@ -16,6 +16,8 @@ import TravelerDashboard from "./Components/Pages/TravelerDashboard";
 import GuideDashboard from "./Components/Pages/GuideDashboard";
 import GuideLogin from "./Components/Pages/GuideLogin";
 import AdminMessages from "./Components/Pages/AdminMessages";
+import GuideProfile from "./Components/Pages/GuideProfile";
+import PlacesExplorer from "./Components/Pages/PlacesExplorer";
 
 function App() {
   return (
@@ -36,14 +38,23 @@ function App() {
         <Route path="/traveler-dashboard" element={<ProtectedRoute><TravelerDashboard /></ProtectedRoute>} />
         <Route path="/guide-dashboard" element={<ProtectedRoute><GuideDashboard /></ProtectedRoute>} />
 
+        {/* Guide Profile - Only for guides */}
+        <Route path="/guide-profile" element={<ProtectedRoute allowedRoles={['guide']}><GuideProfile /></ProtectedRoute>} />
+
         {/* Admin */}
         <Route path="/admin/messages" element={<ProtectedRoute><AdminMessages /></ProtectedRoute>} />
 
         {/* Other pages */}
         <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
         <Route path="/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
-        <Route path="/guide-booking" element={<ProtectedRoute><GuideBooking /></ProtectedRoute>} />
+
+        {/* Guide Booking - Only for travelers */}
+        <Route path="/guide-booking" element={<ProtectedRoute allowedRoles={['traveler']}><GuideBooking /></ProtectedRoute>} />
+
         <Route path="/pakistan-destinations" element={<ProtectedRoute><PakistanDestinations /></ProtectedRoute>} />
+
+        {/* Places Explorer - Search for places using Google Places API */}
+        <Route path="/places-explorer" element={<ProtectedRoute><PlacesExplorer /></ProtectedRoute>} />
       </Routes>
 
       <Footer />

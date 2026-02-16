@@ -12,6 +12,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 @router.post("/signup", status_code=status.HTTP_201_CREATED)
 async def traveler_signup(traveler: TravelerSignup):
     """Register a new traveler"""
+    print(f"[TRAVELER SIGNUP] Received request:")
+    print(f"  - Name: {traveler.name}")
+    print(f"  - Email: {traveler.email}")
+    print(f"  - Password length: {len(traveler.password)}")
+    
     db = await get_database()
     
    
@@ -36,6 +41,7 @@ async def traveler_signup(traveler: TravelerSignup):
     
     
     result = await db.travelers.insert_one(traveler_doc)
+    print(f"[TRAVELER SIGNUP] Created traveler with ID: {result.inserted_id}")
     
     
     access_token = create_access_token(

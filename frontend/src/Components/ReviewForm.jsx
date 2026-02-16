@@ -16,6 +16,12 @@ const ReviewForm = ({ booking, isOpen, onClose, onSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Prevent guides from writing reviews
+        if (user?.type === 'guide') {
+            setError('Guides cannot write reviews. Only travelers can submit reviews.');
+            return;
+        }
+
         if (rating === 0) {
             setError('Please select a rating');
             return;
@@ -134,8 +140,8 @@ const ReviewForm = ({ booking, isOpen, onClose, onSuccess }) => {
                                     >
                                         <Star
                                             className={`w-10 h-10 ${star <= (hoverRating || rating)
-                                                    ? 'text-yellow-400 fill-yellow-400'
-                                                    : 'text-gray-300'
+                                                ? 'text-yellow-400 fill-yellow-400'
+                                                : 'text-gray-300'
                                                 }`}
                                         />
                                     </button>

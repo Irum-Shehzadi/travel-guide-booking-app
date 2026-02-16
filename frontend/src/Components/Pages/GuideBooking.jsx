@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { MapPin, Clock, Search, Star, Loader2, AlertCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import BookingForm from "../BookingForm";
 
 // API Base URL - can be configured in environment variable
 const API_BASE_URL = "http://localhost:8000";
 
 const GuideBooking = () => {
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGuide, setSelectedGuide] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -14,6 +19,13 @@ const GuideBooking = () => {
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Redirect guides to their dashboard
+  useEffect(() => {
+    if (isAuthenticated && user?.type === 'guide') {
+      navigate('/guide-dashboard');
+    }
+  }, [isAuthenticated, user, navigate]);
 
   // Fetch guides from backend API
   useEffect(() => {
