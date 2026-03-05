@@ -1,9 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import HeroSection from "./Components/HeroSection";
-import Contact from "./Components/contact/Contact";
+import Contact from "./Components/Contact/Contact";
 import Footer from "./Components/Footer";
-import Review from "./Components/Pages/Review";
 import GuideBooking from "./Components/Pages/GuideBooking";
 import ProtectedRoute from "./Components/ProtectedRoute";
 
@@ -17,7 +16,11 @@ import GuideDashboard from "./Components/Pages/GuideDashboard";
 import GuideLogin from "./Components/Pages/GuideLogin";
 import AdminMessages from "./Components/Pages/AdminMessages";
 import GuideProfile from "./Components/Pages/GuideProfile";
-import PlacesExplorer from "./Components/Pages/PlacesExplorer";
+
+
+// Admin imports
+import AdminLogin from "./Components/Pages/AdminLogin";
+import AdminDashboard from "./Components/Pages/AdminDashboard";
 
 function App() {
   return (
@@ -29,9 +32,12 @@ function App() {
         <Route path="/traveler-signin" element={<TravelerSign />} />
         <Route path="/guide-registration" element={<GuideRegistration />} />
         <Route path="/guide-login" element={<GuideLogin />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<About />} />
 
-        {/* Protected routes - require login */}
-        <Route path="/contact" element={<ProtectedRoute><Contact /></ProtectedRoute>} />
+        {/* Admin routes */}
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
 
         {/* Dashboard */}
         <Route path="/dashboard" element={<ProtectedRoute><TravelerDashboard /></ProtectedRoute>} />
@@ -44,19 +50,11 @@ function App() {
         {/* Admin */}
         <Route path="/admin/messages" element={<ProtectedRoute><AdminMessages /></ProtectedRoute>} />
 
-        {/* Other pages */}
-        <Route path="/about" element={<ProtectedRoute><About /></ProtectedRoute>} />
-        <Route path="/review" element={<ProtectedRoute><Review /></ProtectedRoute>} />
-
         {/* Guide Booking - Only for travelers */}
         <Route path="/guide-booking" element={<ProtectedRoute allowedRoles={['traveler']}><GuideBooking /></ProtectedRoute>} />
 
         <Route path="/pakistan-destinations" element={<ProtectedRoute><PakistanDestinations /></ProtectedRoute>} />
-
-        {/* Places Explorer - Search for places using Google Places API */}
-        <Route path="/places-explorer" element={<ProtectedRoute><PlacesExplorer /></ProtectedRoute>} />
       </Routes>
-
       <Footer />
     </>
   );

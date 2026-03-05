@@ -62,6 +62,8 @@ class GuideRegistration(BaseModel):
     specializations: List[str]
     certifications: Optional[str] = ""
     profile_photo: str  # Required - URL/path to uploaded photo
+    cnic_number: str  # New field
+    cnic_photo: str   # New field (URL to uploaded image)
     password: str
 
 class GuideLogin(BaseModel):
@@ -82,6 +84,8 @@ class GuideInDB(BaseModel):
     languages: List[str]
     specializations: List[str]
     certifications: Optional[str] = ""
+    cnic_number: Optional[str] = None
+    cnic_photo: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     is_verified: bool = False
     is_active: bool = True
@@ -171,6 +175,10 @@ class PlaceResult(BaseModel):
     phone_number: Optional[str] = None
     website: Optional[str] = None
     cid: Optional[str] = None
+    thumbnail: Optional[str] = None
+    rating: Optional[float] = None
+    ratingCount: Optional[int] = None
+    category: Optional[str] = None
 
 class PlacesSearchResponse(BaseModel):
     places: List[PlaceResult]

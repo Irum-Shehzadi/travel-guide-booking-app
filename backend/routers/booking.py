@@ -31,6 +31,19 @@ async def create_booking(booking: BookingCreate):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Guide is not verified yet"
         )
+
+    # Check for date clash (Already Confirmed)
+    existing_clash = await db.bookings.find_one({
+        "guide_id": booking.guide_id,
+        "booking_date": booking.booking_date,
+        "status": BookingStatus.CONFIRMED.value
+    })
+
+    if existing_clash:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Guide is already booked and confirmed for {booking.booking_date}. Please choose another date."
+        )
     
     # Create booking document
     booking_doc = {
@@ -77,6 +90,12 @@ async def get_traveler_bookings(email: str):
     
     bookings_list = []
     for booking in bookings:
+        # Count how many times this traveler has booked THIS specific guide
+        repeat_count = await db.bookings.count_documents({
+            "traveler_email": email,
+            "guide_id": booking["guide_id"]
+        })
+
         bookings_list.append({
             "id": str(booking["_id"]),
             "guide_id": booking["guide_id"],
@@ -87,7 +106,8 @@ async def get_traveler_bookings(email: str):
             "special_requests": booking.get("special_requests", ""),
             "contact_phone": booking.get("contact_phone", ""),
             "status": booking["status"],
-            "created_at": booking["created_at"].isoformat() if booking.get("created_at") else None
+            "created_at": booking["created_at"].isoformat() if booking.get("created_at") else None,
+            "traveler_booking_count": repeat_count # Important logic here
         })
     
     return {"bookings": bookings_list, "total": len(bookings_list)}
@@ -115,6 +135,12 @@ async def get_guide_bookings(guide_id: str):
     
     bookings_list = []
     for booking in bookings:
+        # Count how many times this specific traveler has booked this guide
+        traveler_repeat_count = await db.bookings.count_documents({
+            "guide_id": guide_id,
+            "traveler_email": booking["traveler_email"]
+        })
+
         bookings_list.append({
             "id": str(booking["_id"]),
             "traveler_name": booking["traveler_name"],
@@ -125,7 +151,8 @@ async def get_guide_bookings(guide_id: str):
             "special_requests": booking.get("special_requests", ""),
             "contact_phone": booking.get("contact_phone", ""),
             "status": booking["status"],
-            "created_at": booking["created_at"].isoformat() if booking.get("created_at") else None
+            "created_at": booking["created_at"].isoformat() if booking.get("created_at") else None,
+            "traveler_booking_count_for_guide": traveler_repeat_count # Feature requirement
         })
     
     return {"bookings": bookings_list, "total": len(bookings_list)}
@@ -149,6 +176,12 @@ async def get_guide_bookings_by_email(email: str):
     
     bookings_list = []
     for booking in bookings:
+        # Count how many times this specific traveler has booked this guide
+        traveler_repeat_count = await db.bookings.count_documents({
+            "guide_id": guide_id,
+            "traveler_email": booking["traveler_email"]
+        })
+
         bookings_list.append({
             "id": str(booking["_id"]),
             "traveler_name": booking["traveler_name"],
@@ -159,7 +192,8 @@ async def get_guide_bookings_by_email(email: str):
             "special_requests": booking.get("special_requests", ""),
             "contact_phone": booking.get("contact_phone", ""),
             "status": booking["status"],
-            "created_at": booking["created_at"].isoformat() if booking.get("created_at") else None
+            "created_at": booking["created_at"].isoformat() if booking.get("created_at") else None,
+            "traveler_booking_count_for_guide": traveler_repeat_count
         })
     
     return {"bookings": bookings_list, "total": len(bookings_list)}
@@ -182,6 +216,21 @@ async def update_booking_status(booking_id: str, update: BookingUpdate):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Booking not found"
         )
+
+    # If updating to CONFIRMED, check if another booking is already confirmed for that date
+    if update.status == BookingStatus.CONFIRMED:
+        clash = await db.bookings.find_one({
+            "_id": {"$ne": ObjectId(booking_id)}, # Don't check current booking
+            "guide_id": booking["guide_id"],
+            "booking_date": booking["booking_date"],
+            "status": BookingStatus.CONFIRMED.value
+        })
+
+        if clash:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Cannot confirm. Guide already has another confirmed booking on {booking['booking_date']}."
+            )
     
     # Update the booking status
     result = await db.bookings.update_one(

@@ -54,7 +54,8 @@ async def traveler_signup(traveler: TravelerSignup):
         "user": {
             "id": str(result.inserted_id),
             "name": traveler.name,
-            "email": traveler.email
+            "email": traveler.email,
+            "type": "traveler"
         },
         "access_token": access_token,
         "token_type": "bearer"
@@ -99,7 +100,8 @@ async def traveler_login(traveler: TravelerLogin):
         "user": {
             "id": str(traveler_doc["_id"]),
             "name": traveler_doc["name"],
-            "email": traveler_doc["email"]
+            "email": traveler_doc["email"],
+            "type": "traveler"
         },
         "access_token": access_token,
         "token_type": "bearer"

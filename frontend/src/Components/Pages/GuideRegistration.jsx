@@ -17,12 +17,16 @@ const GuideRegistration = () => {
     languages: [],
     specializations: [],
     certifications: '',
-    profile_photo: null // Will store the uploaded photo URL
+    profile_photo: null,
+    cnic_number: '',
+    cnic_photo: null
   });
   const [focused, setFocused] = useState('');
   const [loading, setLoading] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadingCnicPhoto, setUploadingCnicPhoto] = useState(false);
   const [photoPreview, setPhotoPreview] = useState(null);
+  const [cnicPhotoPreview, setCnicPhotoPreview] = useState(null);
   const [error, setError] = useState('');
 
   const languages = ['English', 'Urdu', 'Punjabi', 'Pashto', 'Sindhi', 'Balochi'];
@@ -40,27 +44,23 @@ const GuideRegistration = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
-      setError('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
+      setError('Please upload a valid image file (JPEG, PNG, or WebP)');
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setError('Image size must be less than 5MB');
       return;
     }
 
-    // Show preview immediately
     const reader = new FileReader();
     reader.onloadend = () => {
       setPhotoPreview(reader.result);
     };
     reader.readAsDataURL(file);
 
-    // Upload to server
     setUploadingPhoto(true);
     setError('');
 
@@ -76,7 +76,6 @@ const GuideRegistration = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Store the URL in formData
         setFormData(prev => ({ ...prev, profile_photo: data.url }));
       } else {
         setError(data.detail || 'Failed to upload photo');
@@ -91,10 +90,67 @@ const GuideRegistration = () => {
     }
   };
 
+  // Handle CNIC photo upload
+  const handleCnicPhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Please upload a valid image file (JPEG, PNG, or WebP)');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setCnicPhotoPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    setUploadingCnicPhoto(true);
+    setError('');
+
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const response = await fetch(`${API_BASE_URL}/api/upload/image`, {
+        method: 'POST',
+        body: uploadFormData
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setFormData(prev => ({ ...prev, cnic_photo: data.url }));
+      } else {
+        setError(data.detail || 'Failed to upload CNIC photo');
+        setCnicPhotoPreview(null);
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError('Network error. Please try again.');
+      setCnicPhotoPreview(null);
+    } finally {
+      setUploadingCnicPhoto(false);
+    }
+  };
+
   // Remove uploaded photo
   const removePhoto = () => {
     setFormData(prev => ({ ...prev, profile_photo: null }));
     setPhotoPreview(null);
+  };
+
+  // Remove uploaded CNIC photo
+  const removeCnicPhoto = () => {
+    setFormData(prev => ({ ...prev, cnic_photo: null }));
+    setCnicPhotoPreview(null);
   };
 
   const handleSubmit = async () => {
@@ -119,9 +175,25 @@ const GuideRegistration = () => {
       return;
     }
 
-    // Validate profile photo is uploaded
+    // Validate photos and ID
     if (!formData.profile_photo) {
       setError('Please upload your profile photo');
+      return;
+    }
+
+    if (!formData.cnic_number || formData.cnic_number.length < 13) {
+      setError('Please enter a valid CNIC number (minimum 13 digits)');
+      return;
+    }
+
+    if (!formData.cnic_photo) {
+      setError('Please upload your CNIC photo');
+      return;
+    }
+
+    const exp = parseInt(formData.experience);
+    if (isNaN(exp) || exp < 0) {
+      setError('Please enter a valid number for years of experience');
       return;
     }
 
@@ -140,12 +212,14 @@ const GuideRegistration = () => {
           phone: formData.phone,
           city: formData.city,
           password: formData.password,
-          experience: parseInt(formData.experience),
+          experience: exp,
           about: formData.about,
           languages: formData.languages,
           specializations: formData.specializations,
-          certifications: formData.certifications,
-          profile_photo: formData.profile_photo
+          certifications: formData.certifications || "",
+          profile_photo: formData.profile_photo,
+          cnic_number: formData.cnic_number,
+          cnic_photo: formData.cnic_photo
         })
       });
 
@@ -165,12 +239,25 @@ const GuideRegistration = () => {
           languages: [],
           specializations: [],
           certifications: '',
-          profile_photo: null
+          profile_photo: null,
+          cnic_number: '',
+          cnic_photo: null
         });
         setPhotoPreview(null);
+        setCnicPhotoPreview(null);
         setStep(1);
       } else {
-        setError(data.detail || 'Registration failed. Please try again.');
+        // More descriptive error messages for validation
+        let errorMessage = 'Registration failed. Please try again.';
+        if (data.detail && Array.isArray(data.detail)) {
+          errorMessage = data.detail.map(err => {
+            const field = err.loc[err.loc.length - 1];
+            return `${field}: ${err.msg}`;
+          }).join(', ');
+        } else if (data.detail) {
+          errorMessage = data.detail;
+        }
+        setError(errorMessage);
       }
     } catch (err) {
       console.error('Error:', err);
@@ -191,6 +278,19 @@ const GuideRegistration = () => {
     } else if (step === 2) {
       if (!formData.experience || formData.languages.length === 0 || formData.specializations.length === 0) {
         setError('Please complete all required fields');
+        return;
+      }
+    } else if (step === 3) {
+      if (!formData.profile_photo) {
+        setError('Profile photo is required');
+        return;
+      }
+      if (!formData.cnic_number || formData.cnic_number.length < 13) {
+        setError('Valid CNIC number is required (13+ digits)');
+        return;
+      }
+      if (!formData.cnic_photo) {
+        setError('CNIC photo is required for verification');
         return;
       }
     }
@@ -268,7 +368,7 @@ const GuideRegistration = () => {
                       onFocus={() => setFocused('name')}
                       onBlur={() => setFocused('')}
                       placeholder="Enter your full name"
-                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300"
+                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
                     />
                   </div>
 
@@ -284,7 +384,7 @@ const GuideRegistration = () => {
                       onFocus={() => setFocused('email')}
                       onBlur={() => setFocused('')}
                       placeholder="your.email@example.com"
-                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300"
+                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
                     />
                   </div>
 
@@ -300,7 +400,7 @@ const GuideRegistration = () => {
                       onFocus={() => setFocused('phone')}
                       onBlur={() => setFocused('')}
                       placeholder="+92 300 1234567"
-                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300"
+                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
                     />
                   </div>
 
@@ -316,7 +416,7 @@ const GuideRegistration = () => {
                       onFocus={() => setFocused('city')}
                       onBlur={() => setFocused('')}
                       placeholder="Your city"
-                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300"
+                      className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
                     />
                   </div>
                 </div>
@@ -334,7 +434,7 @@ const GuideRegistration = () => {
                     onFocus={() => setFocused('password')}
                     onBlur={() => setFocused('')}
                     placeholder="Create a strong password"
-                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
                   />
                 </div>
 
@@ -350,7 +450,7 @@ const GuideRegistration = () => {
                     onBlur={() => setFocused('')}
                     placeholder="Tell us about your experience, passion for tourism, and why you want to be a guide..."
                     rows="4"
-                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 resize-none"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 resize-none text-black"
                   />
                 </div>
               </div>
@@ -377,7 +477,7 @@ const GuideRegistration = () => {
                     onBlur={() => setFocused('')}
                     placeholder="e.g., 5"
                     min="0"
-                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
                   />
                 </div>
 
@@ -432,8 +532,8 @@ const GuideRegistration = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   {/* Profile Photo - MANDATORY */}
                   <div className={`relative rounded-2xl p-6 border-2 border-dashed transition-all ${photoPreview
-                      ? 'border-green-400 bg-green-50'
-                      : 'border-red-400 bg-linear-to-br from-blue-50 to-purple-50 hover:border-blue-500'
+                    ? 'border-green-400 bg-green-50'
+                    : 'border-red-400 bg-linear-to-br from-blue-50 to-purple-50 hover:border-blue-500'
                     }`}>
                     <input
                       type="file"
@@ -489,16 +589,78 @@ const GuideRegistration = () => {
                   </div>
 
                   {/* ID Card */}
-                  <div className="bg-linear-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-dashed border-purple-300 hover:border-purple-500 transition-all cursor-pointer group">
-                    <input type="file" id="idcard" className="hidden" accept="image/*" />
-                    <label htmlFor="idcard" className="cursor-pointer flex flex-col items-center">
-                      <div className="bg-white p-4 rounded-full mb-3 group-hover:scale-110 transition-transform">
-                        <Upload className="w-8 h-8 text-purple-600" />
+                  <div className={`relative rounded-2xl p-6 border-2 border-dashed transition-all ${cnicPhotoPreview
+                    ? 'border-purple-400 bg-purple-50'
+                    : 'border-purple-300 bg-linear-to-br from-purple-50 to-pink-50 hover:border-purple-500'
+                    }`}>
+                    <input
+                      type="file"
+                      id="cnic_photo"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleCnicPhotoUpload}
+                      disabled={uploadingCnicPhoto}
+                    />
+
+                    {cnicPhotoPreview ? (
+                      <div className="flex flex-col items-center">
+                        <div className="relative">
+                          <img
+                            src={cnicPhotoPreview}
+                            alt="CNIC Preview"
+                            className="w-full h-32 rounded-lg object-cover border-2 border-white shadow-md"
+                          />
+                          <button
+                            type="button"
+                            onClick={removeCnicPhoto}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                          {formData.cnic_photo && (
+                            <div className="absolute -bottom-1 -right-1 bg-purple-500 text-white p-1 rounded-full shadow-md">
+                              <CheckCircle className="w-4 h-4" />
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-purple-600 font-medium mt-3">ID Uploaded ✓</p>
+                        <label htmlFor="cnic_photo" className="text-sm text-purple-600 cursor-pointer hover:underline mt-1">
+                          Change ID Image
+                        </label>
                       </div>
-                      <p className="text-gray-700 font-medium mb-1">ID Card / CNIC</p>
-                      <p className="text-gray-500 text-sm text-center">Upload front & back</p>
-                    </label>
+                    ) : uploadingCnicPhoto ? (
+                      <div className="flex flex-col items-center py-4">
+                        <Loader2 className="w-8 h-8 text-purple-600 animate-spin mb-3" />
+                        <p className="text-gray-600">Uploading ID...</p>
+                      </div>
+                    ) : (
+                      <label htmlFor="cnic_photo" className="cursor-pointer flex flex-col items-center group">
+                        <div className="bg-white p-4 rounded-full mb-3 group-hover:scale-110 transition-transform shadow-sm">
+                          <Upload className="w-8 h-8 text-purple-600" />
+                        </div>
+                        <p className="text-gray-700 font-medium mb-1">
+                          CNIC / ID Image <span className="text-red-500">*</span>
+                        </p>
+                        <p className="text-gray-500 text-sm text-center">Front side preferred (Required)</p>
+                      </label>
+                    )}
                   </div>
+                </div>
+
+                <div className={`relative transition-all duration-300 ${focused === 'cnic_number' ? 'transform scale-[1.02]' : ''}`}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">CNIC / ID Number *</label>
+                  <div className={`absolute left-4 top-[46px] transition-colors duration-300 ${focused === 'cnic_number' ? 'text-blue-600' : 'text-gray-400'}`}>
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    value={formData.cnic_number}
+                    onChange={(e) => setFormData({ ...formData, cnic_number: e.target.value })}
+                    onFocus={() => setFocused('cnic_number')}
+                    onBlur={() => setFocused('')}
+                    placeholder="e.g. 35201-1234567-1"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
+                  />
                 </div>
 
                 <div className={`relative transition-all duration-300 ${focused === 'certifications' ? 'transform scale-[1.02]' : ''}`}>
@@ -513,7 +675,7 @@ const GuideRegistration = () => {
                     onBlur={() => setFocused('')}
                     placeholder="List any tourism certifications, training programs, or relevant qualifications..."
                     rows="4"
-                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 resize-none"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-blue-500 focus:bg-white focus:outline-none transition-all duration-300 resize-none text-black"
                   />
                 </div>
 

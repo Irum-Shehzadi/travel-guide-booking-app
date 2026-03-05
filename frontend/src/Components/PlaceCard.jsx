@@ -1,14 +1,18 @@
 import React from 'react';
-import { MapPin, Phone, Globe, Navigation, ExternalLink } from 'lucide-react';
+import { MapPin, Phone, Globe, Navigation, Star } from 'lucide-react';
 
-const PlaceCard = ({ place, onSelectPlace }) => {
+const PlaceCard = ({ place }) => {
     const {
         title,
         address,
         latitude,
         longitude,
         phone_number,
-        website
+        website,
+        thumbnail,
+        rating,
+        ratingCount,
+        category
     } = place;
 
     const handleGetDirections = () => {
@@ -29,63 +33,65 @@ const PlaceCard = ({ place, onSelectPlace }) => {
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-gray-100">
-            {/* Header */}
-            <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                    <h3 className="text-lg font-bold text-gray-800 mb-2">{title}</h3>
-                    <div className="flex items-start gap-2 text-gray-600 text-sm">
-                        <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-                        <p className="line-clamp-2">{address}</p>
-                    </div>
+        <div className="bg-white/5 border border-white/5 rounded-3xl overflow-hidden hover:bg-white/10 transition-all group">
+            {/* Image (if available) */}
+            {thumbnail ? (
+                <div className="h-40 overflow-hidden relative">
+                    <img src={thumbnail} alt={title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <div className="absolute top-4 left-4 glass-panel px-3 py-1 rounded-full text-[10px] font-bold text-azure uppercase tracking-widest">{category || 'Place'}</div>
                 </div>
-            </div>
+            ) : (
+                <div className="h-24 bg-gradient-to-br from-azure/10 to-transparent flex items-center justify-center">
+                   <MapPin className="w-8 h-8 text-azure/30" />
+                </div>
+            )}
 
-            {/* Contact Information */}
-            <div className="space-y-2 mb-4">
-                {phone_number && (
-                    <button
-                        onClick={handleCallPhone}
-                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm w-full group"
-                    >
-                        <Phone className="w-4 h-4" />
-                        <span className="group-hover:underline">{phone_number}</span>
-                    </button>
-                )}
-                {website && (
-                    <button
-                        onClick={handleVisitWebsite}
-                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm w-full group"
-                    >
-                        <Globe className="w-4 h-4" />
-                        <span className="group-hover:underline truncate">Visit Website</span>
-                        <ExternalLink className="w-3 h-3 ml-auto" />
-                    </button>
-                )}
-            </div>
+            <div className="p-6">
+                <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-bold text-white group-hover:text-azure transition-colors leading-tight line-clamp-1">{title}</h3>
+                    {rating && (
+                        <div className="flex items-center gap-1 bg-white/5 px-2 py-1 rounded-lg">
+                            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                            <span className="text-xs font-bold text-white">{rating}</span>
+                        </div>
+                    )}
+                </div>
 
-            {/* Coordinates */}
-            <div className="text-xs text-gray-400 mb-4">
-                {latitude.toFixed(6)}, {longitude.toFixed(6)}
-            </div>
+                <div className="flex items-start gap-2 text-gray-500 text-xs mb-6">
+                    <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <p className="line-clamp-2">{address}</p>
+                </div>
 
-            {/* Actions */}
-            <div className="flex gap-2">
+                {/* Contact Information */}
+                <div className="space-y-3 mb-6">
+                    {phone_number && (
+                        <button
+                            onClick={handleCallPhone}
+                            className="flex items-center gap-2 text-azure hover:text-white text-xs font-bold transition-all group"
+                        >
+                            <Phone className="w-3.5 h-3.5" />
+                            <span className="truncate">{phone_number}</span>
+                        </button>
+                    )}
+                    {website && (
+                        <button
+                            onClick={handleVisitWebsite}
+                            className="flex items-center gap-2 text-azure hover:text-white text-xs font-bold transition-all group"
+                        >
+                            <Globe className="w-3.5 h-3.5" />
+                            <span className="truncate">Visit Website</span>
+                        </button>
+                    )}
+                </div>
+
+                {/* Actions */}
                 <button
                     onClick={handleGetDirections}
-                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-xl font-medium hover:shadow-lg transition-all"
+                    className="w-full h-12 flex items-center justify-center gap-2 bg-azure/10 text-azure border border-azure/20 rounded-2xl text-xs font-bold hover:bg-azure hover:text-white transition-all duration-300"
                 >
                     <Navigation className="w-4 h-4" />
-                    Get Directions
+                    GET DIRECTIONS
                 </button>
-                {onSelectPlace && (
-                    <button
-                        onClick={() => onSelectPlace(place)}
-                        className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-xl font-medium hover:shadow-lg transition-all"
-                    >
-                        Book Guide
-                    </button>
-                )}
             </div>
         </div>
     );

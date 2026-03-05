@@ -34,9 +34,22 @@ async def search_places(search_request: PlaceSearchRequest):
         )
     
     try:
+        # Enhance query if it's just a city/place name without context keywords
+        query = search_request.query.strip()
+        context_keywords = ["in", "near", "at", "around", "restaurants", "hotels", 
+                           "tourist", "places", "attractions", "cafes", "museums",
+                           "parks", "shopping", "historical", "famous", "best", "top"]
+        query_lower = query.lower()
+        has_context = any(kw in query_lower for kw in context_keywords)
+        
+        # If query is very short (1-2 words) and has no context keywords, 
+        # it's likely a city or general term, so we add "places in"
+        if not has_context and len(query.split()) <= 2:
+            query = f"popular places in {query}"
+        
         # Prepare payload for Serper.dev API
         payload = {
-            "q": search_request.query,
+            "q": query,
             "location": search_request.location,
             "gl": search_request.gl,
             "num": search_request.num
@@ -75,7 +88,11 @@ async def search_places(search_request: PlaceSearchRequest):
                 longitude=place.get("longitude", 0.0),
                 phone_number=place.get("phoneNumber"),
                 website=place.get("website"),
-                cid=place.get("cid")
+                cid=place.get("cid"),
+                thumbnail=place.get("thumbnailUrl") or place.get("thumbnail"), # Serper uses thumbnailUrl often
+                rating=place.get("rating"),
+                ratingCount=place.get("ratingCount"),
+                category=place.get("category")
             )
             places_list.append(place_result)
         

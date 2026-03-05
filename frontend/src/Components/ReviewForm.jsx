@@ -166,7 +166,7 @@ const ReviewForm = ({ booking, isOpen, onClose, onSuccess }) => {
                                 onChange={(e) => setComment(e.target.value)}
                                 placeholder="Tell others about your trip with this guide..."
                                 rows="4"
-                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors resize-none"
+                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors resize-none text-black"
                             />
                         </div>
 

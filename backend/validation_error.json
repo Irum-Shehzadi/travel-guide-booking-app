@@ -1,0 +1,18 @@
+{
+    "url": "http://localhost:8000/api/guide/register",
+    "errors": [
+        {
+            "type": "value_error",
+            "loc": [
+                "body",
+                "email"
+            ],
+            "msg": "value is not a valid email address: The part after the @-sign is not valid. It should have a period.",
+            "input": "irum@123",
+            "ctx": {
+                "reason": "The part after the @-sign is not valid. It should have a period."
+            }
+        }
+    ],
+    "body": "{'fullName': 'irum', 'email': 'irum@123', 'phone': '12345678912', 'city': 'haripur', 'password': '123', 'experience': 0, 'about': 'guide', 'languages': ['English', 'Urdu'], 'specializations': ['Adventure Tourism'], 'certifications': '', 'profile_photo': '/api/upload/image/20260301_191412_28e32627.jpg', 'cnic_number': '133026-532644-7', 'cnic_photo': '/api/upload/image/20260301_191419_3bf26a3f.jpeg'}"
+}

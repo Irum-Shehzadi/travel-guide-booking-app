@@ -1,49 +1,37 @@
 import React, { useState } from "react";
-import { Send, Loader2, CheckCircle, MapPin, Phone, Mail } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Send, Loader2, CheckCircle, MapPin, Phone, Mail, Globe, Zap, MessageSquare } from "lucide-react";
 
 const API_BASE_URL = "http://localhost:8000";
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: ''
-  });
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!formData.name || !formData.email || !formData.message) {
       setError('Please fill all fields');
       return;
     }
-
     setLoading(true);
     setError('');
-
     try {
       const response = await fetch(`${API_BASE_URL}/api/contact/submit`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-
-      const data = await response.json();
-
       if (response.ok) {
         setSuccess(true);
         setFormData({ name: '', email: '', message: '' });
         setTimeout(() => setSuccess(false), 5000);
       } else {
-        setError(data.detail || 'Failed to send message');
+        setError('Failed to send message');
       }
     } catch (err) {
-      console.error('Error:', err);
       setError('Network error. Please try again.');
     } finally {
       setLoading(false);
@@ -51,120 +39,113 @@ const Contact = () => {
   };
 
   return (
-    <section className="py-20 px-4 bg-linear-to-br from-blue-50 via-white to-purple-50">
+    <div className="bg-aurora min-h-screen pt-24 pb-20 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6">
+        <header className="text-center mb-20 relative">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="inline-block px-4 py-1.5 rounded-full bg-azure/10 text-azure text-xs font-bold uppercase tracking-widest mb-6">
+            Get in Touch
+          </motion.div>
+          <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-4xl md:text-6xl font-extrabold text-white mb-6">
+            Let's Start Your <span className="text-gradient">Adventure</span>
+          </motion.h1>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-gray-400 text-lg max-w-2xl mx-auto">
+            Ready to explore Pakistan's hidden gems? Send us a message and we'll help you plan the trip of a lifetime.
+          </motion.p>
+        </header>
 
-      {/* Title */}
-      <div className="text-center mb-20 animate-fadeIn">
-        <h1 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent drop-shadow-sm">
-          Get in Touch
-        </h1>
-        <p className="text-gray-600 text-lg max-w-2xl mx-auto mt-4 leading-relaxed">
-          Start your journey to Pakistan's most beautiful destinations. Book a trusted guide and make your travel safe, easy, and unforgettable.
-        </p>
-      </div>
+        <div className="grid lg:grid-cols-2 gap-16 items-start">
+          {/* Info Side */}
+          <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="space-y-8">
+            <div className="glass-panel p-10 rounded-[40px] border-azure/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 opacity-5">
+                <MessageSquare className="w-40 h-40 text-azure" />
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-8">Contact Information</h2>
 
-      <div className="grid md:grid-cols-2 gap-14 max-w-6xl mx-auto">
+              <div className="space-y-6">
+                {[
+                  { icon: Mail, label: 'Email Us', value: 'shehzadaqib511@gmail.com', color: 'text-azure' },
+                  { icon: Phone, label: 'Call Us', value: '03015440307', color: 'text-green-400' },
+                  { icon: MapPin, label: 'Visit Us', value: 'Haripur, Pakistan', color: 'text-red-400' },
+                  { icon: Globe, label: 'Coverage', value: 'All 4 Provinces', color: 'text-aurora' }
+                ].map((item, i) => (
+                  <motion.div key={i} whileHover={{ x: 10 }} className="flex items-center gap-6 group cursor-pointer">
+                    <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:bg-azure group-hover:border-azure transition-all duration-300">
+                      <item.icon className="w-6 h-6 text-gray-400 group-hover:text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mb-1">{item.label}</p>
+                      <p className="text-white font-medium text-lg">{item.value}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
 
-        {/* Left Card */}
-        <div className="backdrop-blur-xl bg-white/70 border border-white/40 shadow-xl rounded-3xl p-10 space-y-6 animate-slideInLeft">
-          <h2 className="text-4xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Let's Talk
-          </h2>
+            <div className="glass-card p-8 rounded-[30px] flex items-center gap-4 border-azure/10">
+              <div className="w-12 h-12 rounded-xl bg-azure/10 flex items-center justify-center">
+                <Zap className="w-6 h-6 text-azure" />
+              </div>
+              <p className="text-gray-400 text-sm">We typically respond to all inquiries within 2 hours during business hours.</p>
+            </div>
+          </motion.div>
 
-          <p className="text-gray-700 text-lg leading-relaxed">
-            Connect with us to plan your unforgettable journey across Pakistan. Our expert guides ensure your trip is safe, authentic, and full of beautiful memories.
-          </p>
+          {/* Form Side */}
+          <motion.div initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="relative">
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-azure/10 blur-[100px] rounded-full" />
 
-          <div className="space-y-4 pt-4">
-            <p className="text-gray-800 text-lg flex items-center gap-3">
-              <Mail className="w-5 h-5 text-blue-600" />
-              <span>shehzadaqib511@gmail.com</span>
-            </p>
-            <p className="text-gray-800 text-lg flex items-center gap-3">
-              <Phone className="w-5 h-5 text-blue-600" />
-              <span>03015440307</span>
-            </p>
-            <p className="text-gray-800 text-lg flex items-center gap-3">
-              <MapPin className="w-5 h-5 text-blue-600" />
-              <span>Haripur, Pakistan</span>
-            </p>
-          </div>
+            <form onSubmit={handleSubmit} className="glass-panel p-10 rounded-[40px] border-white/5 relative z-10 space-y-6">
+              <AnimatePresence>
+                {success && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-green-500/10 border border-green-500/20 p-4 rounded-2xl flex items-center gap-3 text-green-400 text-sm">
+                    <CheckCircle className="w-5 h-5 shrink-0" /> Message sent successfully!
+                  </motion.div>
+                )}
+                {error && (
+                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="bg-red-500/10 border border-red-500/20 p-4 rounded-2xl text-red-400 text-sm">
+                    {error}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Full Name</label>
+                <input
+                  type="text" placeholder="Aaqib Shehzad" value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-azure/30 transition-all placeholder:text-gray-700"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Email Address</label>
+                <input
+                  type="email" placeholder="aaqib@example.com" value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-azure/30 transition-all placeholder:text-gray-700"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Your Message</label>
+                <textarea
+                  rows="5" placeholder="Tell us about your travel plans..." value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white focus:outline-none focus:ring-2 focus:ring-azure/30 transition-all placeholder:text-gray-700 resize-none"
+                />
+              </div>
+
+              <button
+                type="submit" disabled={loading}
+                className="btn-premium w-full py-5 rounded-2xl text-lg flex items-center justify-center gap-3"
+              >
+                {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : <><Send className="w-5 h-5" /> Send Message</>}
+              </button>
+            </form>
+          </motion.div>
         </div>
-
-        {/* Right Card / Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="backdrop-blur-xl bg-white/70 border border-white/40 shadow-xl rounded-3xl p-10 flex flex-col gap-6 animate-slideInRight"
-        >
-          {/* Success Message */}
-          {success && (
-            <div className="flex items-center gap-3 p-4 bg-green-100 border border-green-200 rounded-xl text-green-700">
-              <CheckCircle className="w-5 h-5" />
-              <span>Message sent successfully! We'll get back to you soon.</span>
-            </div>
-          )}
-
-          {/* Error Message */}
-          {error && (
-            <div className="p-4 bg-red-100 border border-red-200 rounded-xl text-red-700">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="text-gray-800 font-semibold">Your Name</label>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full mt-2 border border-gray-300 rounded-xl p-4 bg-white/80 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            />
-          </div>
-
-          <div>
-            <label className="text-gray-800 font-semibold">Your Email</label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full mt-2 border border-gray-300 rounded-xl p-4 bg-white/80 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            />
-          </div>
-
-          <div>
-            <label className="text-gray-800 font-semibold">Write your message here</label>
-            <textarea
-              rows="6"
-              placeholder="Enter your message"
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              className="w-full mt-2 border border-gray-300 rounded-xl p-4 bg-white/80 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-            ></textarea>
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-linear-to-r from-blue-600 to-purple-600 text-white rounded-xl py-4 text-lg font-semibold shadow-lg hover:scale-[1.03] hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Sending...
-              </>
-            ) : (
-              <>
-                <Send className="w-5 h-5" />
-                Submit Now
-              </>
-            )}
-          </button>
-
-        </form>
       </div>
-    </section>
+    </div>
   );
 };
 

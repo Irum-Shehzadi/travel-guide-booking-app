@@ -38,6 +38,8 @@ async def guide_registration(guide: GuideRegistration):
         "specializations": guide.specializations,
         "certifications": guide.certifications,
         "profile_photo": guide.profile_photo,
+        "cnic_number": guide.cnic_number,
+        "cnic_photo": guide.cnic_photo,
         "is_verified": False,  # Admin needs to verify
         "is_active": True,
         "rating": 0.0,
@@ -61,7 +63,8 @@ async def guide_registration(guide: GuideRegistration):
             "fullName": guide.fullName,
             "email": guide.email,
             "city": guide.city,
-            "is_verified": False
+            "is_verified": False,
+            "type": "guide"
         },
         "access_token": access_token,
         "token_type": "bearer"
@@ -106,7 +109,8 @@ async def guide_login(guide: GuideLogin):
             "id": str(guide_doc["_id"]),
             "name": guide_doc["fullName"],
             "email": guide_doc["email"],
-            "is_guide": True
+            "profile_photo": guide_doc.get("profile_photo"),
+            "type": "guide"
         },
         "access_token": access_token,
         "token_type": "bearer"
@@ -134,6 +138,8 @@ async def get_all_guides():
             "rating": guide.get("rating", 0.0),
             "total_bookings": guide.get("total_bookings", 0),
             "profile_photo": guide.get("profile_photo"),
+            "cnic_number": guide.get("cnic_number"),
+            "cnic_photo": guide.get("cnic_photo"),
             "is_verified": guide.get("is_verified", False)
         })
     
@@ -170,6 +176,9 @@ async def get_guide_by_id(guide_id: str):
         "languages": guide["languages"],
         "specializations": guide["specializations"],
         "certifications": guide.get("certifications", ""),
+        "profile_photo": guide.get("profile_photo"),
+        "cnic_number": guide.get("cnic_number"),
+        "cnic_photo": guide.get("cnic_photo"),
         "rating": guide.get("rating", 0.0),
         "total_bookings": guide.get("total_bookings", 0),
         "is_verified": guide.get("is_verified", False)
@@ -225,9 +234,13 @@ async def search_guides_by_city(city: str):
             "fullName": guide["fullName"],
             "city": guide["city"],
             "experience": guide["experience"],
+            "about": guide.get("about", ""),
+            "phone": guide.get("phone", ""),
             "languages": guide["languages"],
             "specializations": guide["specializations"],
-            "rating": guide.get("rating", 0.0)
+            "rating": guide.get("rating", 0.0),
+            "total_bookings": guide.get("total_bookings", 0),
+            "profile_photo": guide.get("profile_photo")
         })
     
     return {"guides": guides_list, "total": len(guides_list)}

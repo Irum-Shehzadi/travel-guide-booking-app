@@ -1,57 +1,85 @@
- import React from "react";
+import React from "react";
 import { FaFacebookF, FaLinkedinIn, FaTwitter, FaInstagram } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 const Footer = () => {
-  return (
-    <footer className="bg-blue-900 text-white py-12">
-      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
+    return (
+        <footer className="bg-[#0a0f1e] border-t border-white/5 text-white py-16">
+            <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
 
-        {/* About / Branding */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-White-500">Travel Booking Guide</h2>
-          <p className="text-white-300">
-            Explore amazing destinations across Pakistan with the best travel guides. Make your journey unforgettable!
-          </p>
-          <div className="flex gap-4 text-white-300">
-            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">
-              <FaFacebookF />
-            </a>
-            <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">
-              <FaLinkedinIn />
-            </a>
-            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500">
-              <FaInstagram />
-            </a>
-          </div>
-        </div>
+                {/* About / Branding */}
+                <div className="space-y-6 col-span-1 md:col-span-1">
+                    <Link to="/" className="flex items-center gap-3 group">
+                        <img src={logo} alt="Logo" className="h-10 w-auto object-contain drop-shadow-[0_0_15px_rgba(14,165,233,0.3)]" />
+                        <span className="text-xl font-bold tracking-tight text-white">
+                            Travel<span className="text-azure">Guide</span>
+                        </span>
+                    </Link>
+                    <p className="text-gray-400 leading-relaxed text-sm">
+                        Experience the raw beauty of Pakistan with local experts. From snow-capped peaks to coastal serenity, we make every journey legendary.
+                    </p>
+                    <div className="flex gap-4">
+                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-azure hover:border-azure transition-all">
+                            <FaFacebookF />
+                        </a>
+                        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-azure hover:border-azure transition-all">
+                            <FaLinkedinIn />
+                        </a>
+                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-azure hover:border-azure transition-all">
+                            <FaInstagram />
+                        </a>
+                    </div>
+                </div>
 
-        {/* Quick Links */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Quick Links</h3>
-          <ul className="space-y-2 text-white-300">
-            <li><a href="/" className="hover:text-blue-500">Home</a></li>
-            <li><a href="/destination" className="hover:text-blue-500">Destination</a></li>
-            <li><a href="/guide-booking" className="hover:text-blue-500">Guide Booking</a></li>
-            <li><a href="/review" className="hover:text-blue-500">Review</a></li>
-            <li><a href="/contact" className="hover:text-blue-500">Contact</a></li>
-          </ul>
-        </div>
+                {/* Exploration Links */}
+                <div className="space-y-6">
+                    <h3 className="text-lg font-bold text-white">Explore</h3>
+                    <ul className="space-y-3 text-sm font-medium text-gray-400">
+                        <li><Link to="/" className="hover:text-azure transition-colors">Home</Link></li>
+                        <li><Link to="/pakistan-destinations" className="hover:text-azure transition-colors">Destinations</Link></li>
+                        <li><Link to="/guide-booking" className="hover:text-azure transition-colors">Guides</Link></li>
+                    </ul>
+                </div>
 
-        {/* Contact Info */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Contact Us</h3>
-          <p className="text-white-300">Haripur, Pakistan</p>
-          <p className="text-white-300">Email: shehzadaqib511@gmail.com</p>
-          <p className="text-white-300">Phone: 03015440307</p>
-        </div>
+                {/* Support Links */}
+                <div className="space-y-6">
+                    <h3 className="text-lg font-bold text-white">Support</h3>
+                    <ul className="space-y-3 text-sm font-medium text-gray-400">
+                        <li><Link to="/about" className="hover:text-azure transition-colors">About Us</Link></li>
+                        <li><Link to="/contact" className="hover:text-azure transition-colors">Contact</Link></li>
+                        <li><a href="#" className="hover:text-azure transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" className="hover:text-azure transition-colors">Terms of Service</a></li>
+                    </ul>
+                </div>
 
-      </div>
+                {/* Contact Info */}
+                <div className="space-y-6">
+                    <h3 className="text-lg font-bold text-white">Contact Info</h3>
+                    <div className="space-y-4 text-sm text-gray-400">
+                        <p className="flex items-center gap-2">
+                            <span className="text-azure truncate">Haripur, Pakistan</span>
+                        </p>
+                        <p className="flex items-center gap-2">
+                            <span>Email:</span>
+                            <a href="mailto:shehzadaqib511@gmail.com" className="hover:text-azure transition-colors truncate">shehzadaqib511@gmail.com</a>
+                        </p>
+                        <p className="flex items-center gap-2">
+                            <span>Phone:</span>
+                            <a href="tel:03015440307" className="hover:text-azure transition-colors">03015440307</a>
+                        </p>
+                    </div>
+                </div>
 
-      <div className="mt-8 border-t border-gray-700 pt-4 text-center text-white-500 text-sm">
-        &copy; {new Date().getFullYear()} Travel Booking Guide. All rights reserved.
-      </div>
-    </footer>
-  );
+            </div>
+
+            <div className="mt-16 pt-8 border-t border-white/5 text-center px-6">
+                <p className="text-gray-500 text-xs font-medium uppercase tracking-widest">
+                    &copy; {new Date().getFullYear()} Travel Guide. All rights reserved.
+                </p>
+            </div>
+        </footer>
+    );
 };
 
 export default Footer;

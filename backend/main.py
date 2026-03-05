@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import connect_to_mongo, close_mongo_connection
-from routers import traveler, guide, booking, review, contact, upload, weather, places
+from routers import traveler, guide, booking, review, contact, upload, weather, places, admin
 
 app = FastAPI(
     title="Travel Booking API",
@@ -25,10 +25,15 @@ from fastapi.responses import JSONResponse
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
-    print(f"\n[VALIDATION ERROR] Request to {request.url}")
-    print(f"[VALIDATION ERROR] Errors: {exc.errors()}")
-    print(f"[VALIDATION ERROR] Body: {exc.body if hasattr(exc, 'body') else 'N/A'}\n")
-    
+    import json
+    error_log = {
+        "url": str(request.url),
+        "errors": exc.errors(),
+        "body": str(exc.body) if hasattr(exc, 'body') else None
+    }
+    with open("validation_error.json", "w") as f:
+        json.dump(error_log, f, indent=4)
+        
     return JSONResponse(
         status_code=422,
         content={
@@ -59,6 +64,7 @@ app.include_router(contact.router)
 app.include_router(upload.router)
 app.include_router(weather.router)
 app.include_router(places.router)
+app.include_router(admin.router)
 
 # Root endpoint
 @app.get("/")

@@ -151,7 +151,7 @@ const BookingForm = ({ guide, isOpen, onClose, onSuccess }) => {
                                 min={today}
                                 value={formData.booking_date}
                                 onChange={(e) => setFormData({ ...formData, booking_date: e.target.value })}
-                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-black"
                                 required
                             />
                         </div>
@@ -184,7 +184,7 @@ const BookingForm = ({ guide, isOpen, onClose, onSuccess }) => {
                                 value={formData.destination}
                                 onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                                 placeholder="Where do you want to visit?"
-                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-black"
                                 required
                             />
                         </div>
@@ -200,7 +200,7 @@ const BookingForm = ({ guide, isOpen, onClose, onSuccess }) => {
                                 value={formData.contact_phone}
                                 onChange={(e) => setFormData({ ...formData, contact_phone: e.target.value })}
                                 placeholder="+92 300 1234567"
-                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-black"
                                 required
                             />
                         </div>
@@ -216,7 +216,7 @@ const BookingForm = ({ guide, isOpen, onClose, onSuccess }) => {
                                 onChange={(e) => setFormData({ ...formData, special_requests: e.target.value })}
                                 placeholder="Any special requirements or preferences..."
                                 rows="3"
-                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors resize-none"
+                                className="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors resize-none text-black"
                             />
                         </div>
 

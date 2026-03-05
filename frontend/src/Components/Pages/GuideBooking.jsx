@@ -1,59 +1,53 @@
 import React, { useState, useEffect } from "react";
-import { MapPin, Clock, Search, Star, Loader2, AlertCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, Clock, Search, Star, Loader2, AlertCircle, Shield, ChevronRight, CheckCircle, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import BookingForm from "../BookingForm";
 
-// API Base URL - can be configured in environment variable
 const API_BASE_URL = "http://localhost:8000";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1 }
+};
 
 const GuideBooking = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGuide, setSelectedGuide] = useState(null);
   const [showBookingModal, setShowBookingModal] = useState(false);
-
-  // States for API integration
   const [guides, setGuides] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Redirect guides to their dashboard
   useEffect(() => {
-    if (isAuthenticated && user?.type === 'guide') {
-      navigate('/guide-dashboard');
-    }
+    if (isAuthenticated && user?.type === 'guide') navigate('/guide-dashboard');
   }, [isAuthenticated, user, navigate]);
 
-  // Fetch guides from backend API
-  useEffect(() => {
-    fetchGuides();
-  }, []);
+  useEffect(() => { fetchGuides(); }, []);
 
   const fetchGuides = async () => {
     try {
       setLoading(true);
       setError(null);
-
       const response = await fetch(`${API_BASE_URL}/api/guide/all`);
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch guides');
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch guides');
       const data = await response.json();
       setGuides(data.guides || []);
     } catch (err) {
-      console.error('Error fetching guides:', err);
       setError('Unable to load guides. Please make sure the backend server is running.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Filter guides based on search query
   const filteredGuides = guides.filter(guide =>
     guide.city?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     guide.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -66,195 +60,131 @@ const GuideBooking = () => {
   };
 
   const handleBookingSuccess = () => {
-    // Optionally refresh guides to update booking counts
     fetchGuides();
   };
 
-  // Loading State
-  if (loading) {
-    return (
-      <section className="min-h-screen bg-linear-to-br from-gray-50 via-white to-blue-50 py-16 px-4 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-xl text-gray-600 font-medium">Loading guides...</p>
-          <p className="text-gray-500 mt-2">Please wait while we fetch available guides</p>
-        </div>
-      </section>
-    );
-  }
+  if (loading) return (
+    <div className="min-h-screen bg-aurora flex items-center justify-center">
+      <div className="text-center">
+        <Loader2 className="w-12 h-12 text-azure animate-spin mx-auto mb-4" />
+        <p className="text-white font-bold">Loading expert guides...</p>
+      </div>
+    </div>
+  );
 
-  // Error State
-  if (error) {
-    return (
-      <section className="min-h-screen bg-linear-to-br from-gray-50 via-white to-blue-50 py-16 px-4 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="bg-red-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-            <AlertCircle className="w-8 h-8 text-red-600" />
-          </div>
-          <p className="text-xl text-gray-800 font-semibold mb-2">Unable to Load Guides</p>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => fetchGuides()}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Try Again
-          </button>
-        </div>
-      </section>
-    );
-  }
+  if (error) return (
+    <div className="min-h-screen bg-aurora flex items-center justify-center p-6">
+      <div className="glass-panel p-10 rounded-[40px] text-center max-w-md">
+        <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-6" />
+        <h2 className="text-2xl font-bold text-white mb-4">Connection Error</h2>
+        <p className="text-gray-500 mb-8">{error}</p>
+        <button onClick={fetchGuides} className="btn-premium px-8 py-3 w-full">Try Again</button>
+      </div>
+    </div>
+  );
 
   return (
-    <section className="min-h-screen bg-linear-to-br from-gray-50 via-white to-blue-50 py-16 px-4">
-      {/* Title */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Book Your Guide
-        </h1>
-        <p className="text-gray-600 text-lg max-w-3xl mx-auto mt-4">
-          Choose from trusted guides to explore Pakistan safely and comfortably.
-        </p>
-      </div>
+    <div className="min-h-screen bg-aurora pt-24 pb-20 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6">
+        <header className="text-center mb-16 relative">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="inline-block px-4 py-1.5 rounded-full bg-azure/10 text-azure text-xs font-bold uppercase tracking-widest mb-6">Explore Pakistan with Experts</motion.div>
+          <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-4xl md:text-6xl font-extrabold text-white mb-8">Ready to Meet Your <span className="text-gradient">Guide?</span></motion.h1>
+          <div className="max-w-2xl mx-auto relative group">
+            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-azure transition-colors" />
+            <input
+              type="text" placeholder="Search by city, name, or specialty..."
+              value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-white/5 border border-white/10 rounded-3xl py-5 pl-16 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-azure/30 transition-all shadow-2xl"
+            />
+          </div>
+        </header>
 
-      {/* Search Bar */}
-      <div className="max-w-2xl mx-auto mb-10">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search by city, guide name, or specialization..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-500 focus:outline-none shadow-lg text-gray-700 placeholder-gray-400"
-          />
-        </div>
-      </div>
+        {filteredGuides.length > 0 ? (
+          <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredGuides.map((guide) => (
+              <motion.div key={guide.id} variants={itemVariants} className="glass-card rounded-[40px] overflow-hidden group border-white/5 hover:border-azure/20 transition-all">
+                <div className="relative h-72 overflow-hidden">
+                  {guide.profile_photo ? (
+                    <img src={guide.profile_photo.startsWith('/api') ? `${API_BASE_URL}${guide.profile_photo}` : guide.profile_photo} alt={guide.fullName} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-azure/20 to-aurora/20 flex items-center justify-center">
+                      <span className="text-7xl font-bold text-white/10">{guide.fullName?.charAt(0)}</span>
+                    </div>
+                  )}
+                  <div className="absolute top-4 right-4 glass-panel px-3 py-1 rounded-full flex items-center gap-1 z-10">
+                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                    <span className="text-white text-xs font-bold">{guide.rating?.toFixed(1) || '0.0'}</span>
+                  </div>
+                  {guide.is_verified && (
+                    <div className="absolute top-4 left-4 bg-azure/90 backdrop-blur-md text-white px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-xl flex items-center gap-2 z-10">
+                      <Shield className="w-3 h-3" /> Verified
+                    </div>
+                  )}
+                </div>
 
-      {/* Guides Grid */}
-      {filteredGuides.length > 0 ? (
-        <div className="max-w-7xl mx-auto grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredGuides.map((guide) => (
-            <div
-              key={guide.id}
-              className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform hover:-translate-y-2"
-            >
-              <div className="relative h-64 overflow-hidden">
-                {/* Guide Image - show profile photo if available */}
-                {guide.profile_photo ? (
-                  <img
-                    src={guide.profile_photo.startsWith('/api')
-                      ? `${API_BASE_URL}${guide.profile_photo}`
-                      : guide.profile_photo
-                    }
-                    alt={guide.fullName}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      // Fallback to gradient on error
-                      e.target.style.display = 'none';
-                      e.target.nextSibling.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                {/* Fallback gradient with initial */}
-                <div
-                  className={`absolute inset-0 bg-linear-to-br from-blue-400 via-purple-500 to-pink-500 flex items-center justify-center ${guide.profile_photo ? 'hidden' : ''}`}
-                >
-                  <div className="text-white text-center">
-                    <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full mx-auto mb-3 flex items-center justify-center text-4xl font-bold">
-                      {guide.fullName?.charAt(0) || 'G'}
+                <div className="p-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold text-white group-hover:text-azure transition-colors">{guide.fullName}</h3>
+                    <div className="text-azure flex items-center gap-1 text-[10px] font-bold uppercase bg-azure/10 px-3 py-1.5 rounded-xl border border-azure/20">
+                      {guide.experience} Years Exp
                     </div>
                   </div>
-                </div>
-                {/* Rating Badge */}
-                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
-                  <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                  <span className="font-semibold text-gray-800">{guide.rating?.toFixed(1) || '0.0'}</span>
-                </div>
-                {/* Verified Badge */}
-                {guide.is_verified && (
-                  <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
-                    ✓ Verified
-                  </div>
-                )}
-              </div>
-              <div className="p-5">
-                <h3 className="text-lg font-bold text-gray-800 mb-1">{guide.fullName}</h3>
-                <div className="flex items-center text-gray-500 text-sm mb-3 gap-2">
-                  <MapPin className="w-4 h-4" /> {guide.city}
-                </div>
-                <p className="text-gray-600 text-sm mb-2">
-                  Experience: {guide.experience} years
-                </p>
-                {/* Languages */}
-                {guide.languages && guide.languages.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {guide.languages.slice(0, 3).map((lang, idx) => (
-                      <span key={idx} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                        {lang}
-                      </span>
-                    ))}
-                    {guide.languages.length > 3 && (
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                        +{guide.languages.length - 3}
-                      </span>
-                    )}
-                  </div>
-                )}
-                {/* Specializations */}
-                {guide.specializations && guide.specializations.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {guide.specializations.slice(0, 2).map((spec, idx) => (
-                      <span key={idx} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full">
-                        {spec}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                  <div className="text-gray-500 text-sm flex items-center gap-1">
-                    <Clock className="w-4 h-4" /> Full day
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs text-gray-500">Bookings</span>
-                    <p className="text-lg font-bold text-blue-600">{guide.total_bookings || 0}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleBookNow(guide)}
-                  className="w-full mt-4 bg-linear-to-r from-blue-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105">
-                  Book Now
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16">
-          <div className="text-gray-400 mb-4">
-            <Search className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          </div>
-          {guides.length === 0 ? (
-            <>
-              <p className="text-xl text-gray-600 font-semibold">No verified guides yet</p>
-              <p className="text-gray-500 mt-2">Check back soon! Guides are being verified.</p>
-            </>
-          ) : (
-            <>
-              <p className="text-xl text-gray-600 font-semibold">No guides found</p>
-              <p className="text-gray-500 mt-2">Try searching with a different city, name, or specialization</p>
-            </>
-          )}
-        </div>
-      )}
 
-      {/* Booking Modal */}
+                  <div className="flex items-center text-gray-400 text-sm mb-6 gap-2 font-medium">
+                    <MapPin className="w-4 h-4 text-azure" /> {guide.city}
+                  </div>
+
+                  {/* Languages & Specialties */}
+                  <div className="space-y-3 mb-8">
+                    <div className="flex flex-wrap gap-2">
+                      {guide.languages?.slice(0, 3).map((l, i) => (
+                        <span key={i} className="text-[10px] font-bold text-gray-500 bg-white/5 px-2.5 py-1 rounded-lg border border-white/5">{l}</span>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {guide.specializations?.slice(0, 2).map((s, i) => (
+                        <span key={i} className="text-[10px] font-bold text-azure bg-azure/5 px-2.5 py-1 rounded-lg border border-azure/10 uppercase tracking-wider">{s}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-6 border-t border-white/5">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-gray-600" />
+                      <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Available</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] text-gray-600 font-bold uppercase tracking-widest mb-1">Bookings</p>
+                      <p className="text-lg font-bold text-white">{guide.total_bookings || 0}</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleBookNow(guide)}
+                    className="btn-premium w-full mt-8 py-4 px-6 rounded-2xl flex items-center justify-center gap-3 transition-transform hover:scale-[1.02]"
+                  >
+                    Get Started <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <div className="glass-panel p-20 rounded-[50px] text-center border-white/5">
+            <Search className="w-16 h-16 mx-auto mb-6 text-white/5" />
+            <p className="text-xl text-gray-500 font-bold">No guides found matching your selection.</p>
+            <button onClick={() => setSearchQuery('')} className="text-azure mt-4 hover:underline font-bold">Show all guides</button>
+          </div>
+        )}
+      </div>
+
       <BookingForm
         guide={selectedGuide}
         isOpen={showBookingModal}
         onClose={() => setShowBookingModal(false)}
         onSuccess={handleBookingSuccess}
       />
-    </section>
+    </div>
   );
 };
 

@@ -22,7 +22,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   // Check if user's role is allowed
   if (allowedRoles && user?.type && !allowedRoles.includes(user.type)) {
     // Redirect to appropriate dashboard based on role
-    const redirectPath = user.type === 'guide' ? '/guide-dashboard' : '/traveler-dashboard';
+    let redirectPath = '/traveler-dashboard';
+    if (user.type === 'guide') redirectPath = '/guide-dashboard';
+    if (user.type === 'admin') redirectPath = '/admin-dashboard';
     return <Navigate to={redirectPath} replace />;
   }
 

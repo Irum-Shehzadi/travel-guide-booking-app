@@ -127,26 +127,39 @@ async def get_weather(city: str):
     
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get(api_url, params=params, timeout=10.0)
+            response = await client.get(api_url, params=params, timeout=15.0)
+            
+            if response.status_code != 200:
+                print(f"Weather API Error: {response.status_code} - {response.text}")
+                # Fallback attempt with simpler parameters if first one fails
+                fallback_params = {
+                    "latitude": lat,
+                    "longitude": lon,
+                    "current_weather": "true",
+                    "timezone": "Asia/Karachi"
+                }
+                response = await client.get(api_url, params=fallback_params, timeout=10.0)
+            
             response.raise_for_status()
             data = response.json()
     except httpx.HTTPError as e:
+        print(f"HTTPErr in get_weather for {city}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=f"Weather service unavailable: {str(e)}"
+            detail=f"Weather service temporarily unavailable for {city}. Please check your internet connection."
         )
     
     # Parse response
-    current = data.get("current", {})
-    weather_code = current.get("weather_code", 0)
+    current = data.get("current", data.get("current_weather", {}))
+    weather_code = current.get("weather_code", current.get("weathercode", 0))
     weather_info = WEATHER_CONDITIONS.get(weather_code, {"condition": "Unknown", "icon": "🌡️"})
     
     return WeatherResponse(
         city=city.title(),
-        temperature=current.get("temperature_2m", 0),
-        feels_like=current.get("apparent_temperature", 0),
+        temperature=current.get("temperature_2m", current.get("temperature", 0)),
+        feels_like=current.get("apparent_temperature", current.get("temperature", 0)),
         humidity=current.get("relative_humidity_2m", 0),
-        wind_speed=current.get("wind_speed_10m", 0),
+        wind_speed=current.get("wind_speed_10m", current.get("windspeed", 0)),
         condition=weather_info["condition"],
         icon=weather_info["icon"],
         latitude=lat,

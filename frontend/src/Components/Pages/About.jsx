@@ -1,184 +1,160 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // <- Added for routing
-import { Shield, Award, Clock, Star, Users, MapPin, TrendingUp, Heart, CheckCircle, Target } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { Shield, Award, Clock, Star, Users, MapPin, TrendingUp, Heart, CheckCircle, Target, Globe, Zap } from 'lucide-react';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15 }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1 }
+};
 
 const About = () => {
   const stats = [
-    { icon: Users, value: '500+', label: 'Verified Guides', color: 'from-blue-500 to-cyan-500' },
-    { icon: MapPin, value: '50+', label: 'Cities Covered', color: 'from-purple-500 to-pink-500' },
-    { icon: Star, value: '10K+', label: 'Happy Travelers', color: 'from-green-500 to-emerald-500' },
-    { icon: TrendingUp, value: '4.9/5', label: 'Average Rating', color: 'from-amber-500 to-orange-500' },
+    { icon: Shield, value: '500+', label: 'Verified Guides' },
+    { icon: MapPin, value: '50+', label: 'Cities Covered' },
+    { icon: Users, value: '10K+', label: 'Travelers' },
+    { icon: Award, value: '4.9/5', label: 'Top Rated' },
   ];
 
   const features = [
-    {
-      icon: Shield,
-      title: 'Verified Guides',
-      description: 'All guides are background-checked, certified, and verified with proven expertise in Pakistan\'s history and culture.',
-      color: 'from-blue-500 to-cyan-500',
-    },
-    {
-      icon: Award,
-      title: 'Expert Knowledge',
-      description: 'Deep understanding of local history, culture, traditions, and hidden gems that only locals know about.',
-      color: 'from-purple-500 to-pink-500',
-    },
-    {
-      icon: Clock,
-      title: 'Flexible Booking',
-      description: 'Easy scheduling, instant confirmation, and fair cancellation policies designed for your convenience.',
-      color: 'from-green-500 to-emerald-500',
-    },
-    {
-      icon: Star,
-      title: 'Quality Assured',
-      description: 'Read genuine reviews and ratings from real travelers. We maintain high standards for all our guides.',
-      color: 'from-amber-500 to-orange-500',
-    },
-  ];
-
-  const values = [
-    { icon: Heart, title: 'Passion for Culture', description: 'We love sharing Pakistan\'s rich heritage' },
-    { icon: Shield, title: 'Safety First', description: 'Your security is our top priority' },
-    { icon: CheckCircle, title: 'Authenticity', description: 'Genuine local experiences guaranteed' },
-    { icon: Target, title: 'Excellence', description: 'Committed to providing the best service' },
+    { icon: Globe, title: 'Authentic Experience', desc: 'Real local connections that go beyond typical tourist spots.' },
+    { icon: Shield, title: 'Safe & Secure', desc: 'Vetted guides and verified profiles for your peace of mind.' },
+    { icon: Zap, title: 'Instant Booking', desc: 'No more waiting. Book your guide and start exploring.' },
   ];
 
   return (
-    <section id="about" className="py-16 md:py-20 px-4 bg-linear-to-br from-gray-50 via-white to-blue-50">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16 animate-fadeIn">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-linear-to-r from-blue-600 to-purple-600 rounded-full mb-4">
-            <Users className="h-8 w-8 text-white" />
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            About Pakistan Travel
-          </h2>
-          <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-            Connecting travelers with expert local guides for unforgettable journeys across Pakistan
-          </p>
-        </div>
+    <div className="bg-aurora min-h-screen pt-24 pb-20 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6">
+        {/* Header Section */}
+        <header className="text-center mb-20">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-azure/10 text-azure text-xs font-bold uppercase tracking-widest mb-6"
+          >
+            Our Mission
+          </motion.div>
+          <motion.h1
+            initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+            className="text-4xl md:text-6xl font-extrabold text-white mb-6"
+          >
+            Revolutionizing Tourism in <br />
+            <span className="text-gradient">Majestic Pakistan</span>
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}
+            className="text-gray-400 text-lg max-w-2xl mx-auto"
+          >
+            We bridge the gap between world-class travelers and hidden local gems, providing authentic journeys that you'll remember forever.
+          </motion.p>
+        </header>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16 animate-fadeIn">
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <div className={`inline-flex items-center justify-center w-12 h-12 bg-linear-to-r ${stat.color} rounded-xl mb-4`}>
-                <stat.icon className="h-6 w-6 text-white" />
+        <motion.div
+          variants={containerVariants} initial="hidden" animate="visible"
+          className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-24"
+        >
+          {stats.map((s, i) => (
+            <motion.div key={i} variants={itemVariants} className="glass-card p-8 rounded-3xl text-center">
+              <div className="w-12 h-12 rounded-2xl bg-azure/10 flex items-center justify-center mx-auto mb-4 border border-azure/20">
+                <s.icon className="w-6 h-6 text-azure" />
               </div>
-              <div className="text-3xl md:text-4xl font-bold text-gray-800 mb-1">
-                {stat.value}
-              </div>
-              <div className="text-sm text-gray-600">{stat.label}</div>
-            </div>
+              <div className="text-3xl font-bold text-white mb-1">{s.value}</div>
+              <div className="text-gray-500 text-xs font-bold uppercase tracking-widest">{s.label}</div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
-        {/* Main Content */}
-        <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
-          {/* Left: Description */}
-          <div className="animate-slideInLeft">
-            <h3 className="text-3xl font-bold text-gray-800 mb-6">
-              Your Gateway to Pakistan's Hidden Treasures
-            </h3>
-            <p className="text-gray-700 mb-4 leading-relaxed">
-              We connect travelers with experienced local guides who have deep knowledge of Pakistan's rich history, diverse culture, and stunning landscapes. Our mission is to make your journey authentic, safe, and unforgettable.
+        {/* Story Section */}
+        <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">
+          <motion.div
+            initial={{ x: -30, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }}
+            className="space-y-6"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Your Gateway to <span className="text-azure">Hidden Treasures</span></h2>
+            <p className="text-gray-400 leading-relaxed">
+              Pakistan is a land of untold stories, breathtaking landscapes, and unmatched hospitality. Yet, many travelers only see the surface. Our platform was born from a desire to change that.
             </p>
-            <p className="text-gray-700 mb-6 leading-relaxed">
-              Our platform ensures safe, authentic, and memorable travel experiences across all four provinces of Pakistan, from the ancient cities of Punjab to the mountainous beauty of KPK, the coastal charm of Sindh, and the rugged landscapes of Balochistan.
+            <p className="text-gray-400 leading-relaxed">
+              We empower local experts—from the rugged mountains of Gilgit to the bustling streets of Lahore—giving them a platform to share their heritage while ensuring travelers have the safest and most authentic experience possible.
             </p>
-            
-            {/* Values Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {values.map((value, index) => (
-                <div key={index} className="flex items-start space-x-3">
-                  <div className="bg-blue-100 p-2 rounded-lg shrink-0">
-                    <value.icon className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-800 text-sm">{value.title}</h4>
-                    <p className="text-xs text-gray-600">{value.description}</p>
-                  </div>
+            <div className="grid grid-cols-2 gap-4 pt-4">
+              {['Verified Guides', 'Secure Payments', 'Custom Tours', '24/7 Support'].map(t => (
+                <div key={t} className="flex items-center gap-2 text-sm text-gray-300">
+                  <CheckCircle className="w-4 h-4 text-azure" /> {t}
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          {/* Right: Features */}
-          <div className="animate-slideInRight">
-            <div className="bg-linear-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl p-8 text-white shadow-2xl">
-              <h3 className="text-2xl font-bold mb-6">Why Choose Us?</h3>
-              <div className="space-y-6">
-                {features.map((feature, index) => (
-                  <div key={index} className="flex items-start space-x-4">
-                    <div className="bg-white bg-opacity-20 backdrop-blur-sm p-3 rounded-xl shrink-0">
-                      <feature.icon className="h-6 w-6 text-white" />
+          <motion.div
+            initial={{ x: 30, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} viewport={{ once: true }}
+            className="relative"
+          >
+            <div className="glass-panel p-8 rounded-[40px] border-azure/20 relative z-10">
+              <h3 className="text-2xl font-bold text-white mb-8">Why Travelers Trust Us</h3>
+              <div className="space-y-8">
+                {features.map((f, i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-azure/10 flex items-center justify-center shrink-0 border border-azure/20">
+                      <f.icon className="w-5 h-5 text-azure" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-lg mb-1">{feature.title}</h4>
-                      <p className="text-blue-100 text-sm leading-relaxed">
-                        {feature.description}
-                      </p>
+                      <h4 className="text-white font-bold mb-1">{f.title}</h4>
+                      <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-aurora/30 blur-[80px] rounded-full" />
+            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-azure/20 blur-[80px] rounded-full" />
+          </motion.div>
         </div>
 
-        {/* Mission & Vision */}
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-linear-to-r from-blue-500 to-cyan-500 rounded-xl mb-4">
-              <Target className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">Our Mission</h3>
-            <p className="text-gray-700 leading-relaxed">
-              To bridge the gap between travelers and local experts, creating authentic cultural exchanges while promoting sustainable tourism across Pakistan. We aim to showcase the true beauty and diversity of our nation through the eyes of those who know it best.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-linear-to-r from-purple-500 to-pink-500 rounded-xl mb-4">
-              <Star className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">Our Vision</h3>
-            <p className="text-gray-700 leading-relaxed">
-              To become the leading platform for cultural tourism in Pakistan, recognized globally for connecting travelers with exceptional local guides. We envision a future where every visitor experiences the warmth, beauty, and rich heritage of Pakistan.
-            </p>
-          </div>
+        {/* Values section */}
+        <div className="grid md:grid-cols-2 gap-8 mb-24">
+          {[
+            { icon: Target, title: 'Our Mission', desc: 'To showcase the true spirit of Pakistan by connecting global adventurers with verified local expertise.', bg: 'bg-azure/5' },
+            { icon: Heart, title: 'Our Vision', desc: 'To become the gold standard for cultural tourism in the region, fostering sustainable growth for local communities.', bg: 'bg-aurora/5' }
+          ].map((v, i) => (
+            <motion.div
+              key={i} initial={{ y: 30, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.2 }}
+              className={`p-12 rounded-[40px] border border-white/5 ${v.bg} hover:border-azure/20 transition-all group`}
+            >
+              <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center mb-8 border border-white/10 group-hover:scale-110 transition-transform">
+                <v.icon className={`w-8 h-8 ${i === 0 ? 'text-azure' : 'text-aurora'}`} />
+              </div>
+              <h3 className="text-3xl font-bold text-white mb-4">{v.title}</h3>
+              <p className="text-gray-400 leading-relaxed text-lg">{v.desc}</p>
+            </motion.div>
+          ))}
         </div>
 
         {/* CTA Section */}
-        <div className="bg-linear-to-r from-blue-600 to-purple-600 rounded-3xl p-8 md:p-12 text-center text-white shadow-2xl">
-          <h3 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Start Your Journey?
-          </h3>
-          <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
-            Join thousands of travelers who have discovered the real Pakistan with our expert guides
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/guides" // <- updated routing
-              className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-blue-50 transition shadow-lg transform hover:scale-105"
-            >
-              Find Your Guide
-            </Link>
-            <Link
-              to="/destinations" // <- updated routing
-              className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition transform hover:scale-105"
-            >
-              Explore Destinations
-            </Link>
+        <motion.div
+          initial={{ y: 40, opacity: 0 }} whileInView={{ y: 0, opacity: 1 }} viewport={{ once: true }}
+          className="glass-panel p-12 md:p-20 rounded-[50px] text-center relative overflow-hidden group"
+        >
+          <div className="absolute inset-0 bg-gradient-to-tr from-azure/5 to-aurora/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="relative z-10">
+            <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">Real Adventure Awaits</h2>
+            <p className="text-gray-400 text-lg mb-10 max-w-xl mx-auto">Join thousands of travelers who have discovered the heart of Pakistan with us.</p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link to="/pakistan-destinations" className="btn-premium px-10 py-4 text-lg">Start Exploring</Link>
+              <Link to="/contact" className="px-10 py-4 border border-white/10 rounded-2xl text-white font-bold hover:bg-white/5 transition-all text-lg">Contact Us</Link>
+            </div>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </section>
+    </div>
   );
 };
 

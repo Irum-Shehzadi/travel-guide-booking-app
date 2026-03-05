@@ -1,377 +1,158 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
-    User,
-    Calendar,
-    MapPin,
-    Clock,
-    CheckCircle,
-    XCircle,
-    Loader2,
-    AlertCircle,
-    ChevronRight,
-    Mail,
-    Star,
-    MessageSquare
+    User, Calendar, MapPin, Clock, CheckCircle, XCircle, Loader2,
+    AlertCircle, ChevronRight, Mail, Zap, Compass, Trash2
 } from 'lucide-react';
-import ReviewForm from '../ReviewForm';
 
 const API_BASE_URL = "http://localhost:8000";
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+};
 
 const TravelerDashboard = () => {
     const { user, isAuthenticated, loading: authLoading } = useAuth();
     const navigate = useNavigate();
-
     const [bookings, setBookings] = useState([]);
-    const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [showReviewModal, setShowReviewModal] = useState(false);
-    const [selectedBooking, setSelectedBooking] = useState(null);
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
             navigate('/traveler-signin');
             return;
         }
-
-        // Redirect guides to their own dashboard
         if (!authLoading && user && user.type === 'guide') {
             navigate('/guide-dashboard');
             return;
         }
-
-        if (user?.email) {
-            fetchBookings();
-            fetchMyReviews();
-        }
+        if (user?.email) fetchBookings();
     }, [user, isAuthenticated, authLoading, navigate]);
 
     const fetchBookings = async () => {
         try {
             setLoading(true);
-            setError(null);
-
             const response = await fetch(`${API_BASE_URL}/api/booking/traveler/${user.email}`);
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch bookings');
-            }
-
             const data = await response.json();
             setBookings(data.bookings || []);
         } catch (err) {
-            console.error('Error:', err);
             setError('Unable to load your bookings');
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchMyReviews = async () => {
+    const handleDeleteBooking = async (id) => {
+        if (!confirm('Cancel this booking?')) return;
         try {
-            const response = await fetch(`${API_BASE_URL}/api/review/traveler/${user.email}`);
-            if (response.ok) {
-                const data = await response.json();
-                setReviews(data.reviews || []);
-            }
-        } catch (err) {
-            console.error('Error fetching reviews:', err);
-        }
+            await fetch(`${API_BASE_URL}/api/booking/${id}`, { method: 'DELETE' });
+            setBookings(bookings.map(b => b.id === id ? { ...b, status: 'cancelled' } : b));
+        } catch (err) { alert('Failed to cancel'); }
     };
 
-    const hasReviewedBooking = (bookingId) => {
-        return reviews.some(r => r.booking_id === bookingId);
-    };
-
-    const handleWriteReview = (booking) => {
-        setSelectedBooking(booking);
-        setShowReviewModal(true);
-    };
-
-    const handleReviewSuccess = () => {
-        fetchMyReviews(); // Refresh reviews list
-    };
-
-    const handleDeleteBooking = async (bookingId) => {
-        if (!window.confirm('Are you sure you want to cancel this booking?')) {
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/booking/${bookingId}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to cancel booking');
-            }
-
-            // Update local state - mark as cancelled
-            setBookings(bookings.map(b =>
-                b.id === bookingId ? { ...b, status: 'cancelled' } : b
-            ));
-        } catch (err) {
-            console.error('Error deleting booking:', err);
-            alert('Failed to cancel booking');
-        }
-    };
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'confirmed': return 'bg-green-100 text-green-700';
-            case 'pending': return 'bg-yellow-100 text-yellow-700';
-            case 'cancelled': return 'bg-red-100 text-red-700';
-            case 'completed': return 'bg-blue-100 text-blue-700';
-            default: return 'bg-gray-100 text-gray-700';
-        }
-    };
-
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'confirmed': return <CheckCircle className="w-4 h-4" />;
-            case 'pending': return <Clock className="w-4 h-4" />;
-            case 'cancelled': return <XCircle className="w-4 h-4" />;
-            case 'completed': return <CheckCircle className="w-4 h-4" />;
-            default: return <Clock className="w-4 h-4" />;
-        }
-    };
-
-    const canWriteReview = (booking) => {
-        // Allow review for confirmed or completed bookings that haven't been reviewed yet
-        return (booking.status === 'confirmed' || booking.status === 'completed')
-            && !hasReviewedBooking(booking.id);
-    };
-
-    if (authLoading) {
-        return (
-            <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-            </div>
-        );
-    }
+    if (authLoading) return <div className="min-h-screen bg-aurora flex items-center justify-center"><Loader2 className="w-10 h-10 text-azure animate-spin" /></div>;
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-blue-50 py-12 px-4">
-            <div className="max-w-6xl mx-auto">
-                {/* Header */}
-                <div className="bg-linear-to-r from-blue-600 to-purple-600 rounded-3xl p-8 text-white mb-8 shadow-xl">
-                    <div className="flex flex-col md:flex-row items-center gap-6">
-                        <div className="w-24 h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-4xl font-bold">
-                            {user?.name?.charAt(0) || 'U'}
+        <div className="min-h-screen bg-aurora pt-24 pb-20">
+            <div className="max-w-7xl mx-auto px-6">
+                {/* Header Card */}
+                <motion.div
+                    initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                    className="glass-panel p-8 md:p-12 rounded-[40px] border-azure/20 mb-10 relative overflow-hidden group"
+                >
+                    <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <Compass className="w-40 h-40 text-azure" />
+                    </div>
+                    <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-azure to-aurora p-1">
+                            <div className="w-full h-full rounded-full bg-obsidian flex items-center justify-center text-3xl font-bold text-white">
+                                {user?.name?.charAt(0)}
+                            </div>
                         </div>
                         <div className="text-center md:text-left">
-                            <h1 className="text-3xl font-bold mb-2">Welcome, {user?.name || 'Traveler'}!</h1>
-                            <p className="text-blue-100 flex items-center justify-center md:justify-start gap-2">
-                                <Mail className="w-4 h-4" />
-                                {user?.email}
+                            <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2 underline decoration-azure decoration-4 underline-offset-8">Hello, {user?.name}!</h1>
+                            <p className="text-gray-500 font-medium flex items-center gap-2">
+                                <Mail className="w-4 h-4 text-azure" /> {user?.email}
                             </p>
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-white rounded-2xl p-6 shadow-lg">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-blue-100 p-3 rounded-xl">
-                                <Calendar className="w-6 h-6 text-blue-600" />
-                            </div>
-                            <div>
-                                <p className="text-gray-500 text-sm">Total Bookings</p>
-                                <p className="text-2xl font-bold text-gray-800">{bookings.length}</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bg-white rounded-2xl p-6 shadow-lg">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-green-100 p-3 rounded-xl">
-                                <CheckCircle className="w-6 h-6 text-green-600" />
-                            </div>
-                            <div>
-                                <p className="text-gray-500 text-sm">Confirmed</p>
-                                <p className="text-2xl font-bold text-gray-800">
-                                    {bookings.filter(b => b.status === 'confirmed').length}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bg-white rounded-2xl p-6 shadow-lg">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-yellow-100 p-3 rounded-xl">
-                                <Clock className="w-6 h-6 text-yellow-600" />
-                            </div>
-                            <div>
-                                <p className="text-gray-500 text-sm">Pending</p>
-                                <p className="text-2xl font-bold text-gray-800">
-                                    {bookings.filter(b => b.status === 'pending').length}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bg-white rounded-2xl p-6 shadow-lg">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-purple-100 p-3 rounded-xl">
-                                <CheckCircle className="w-6 h-6 text-purple-600" />
-                            </div>
-                            <div>
-                                <p className="text-gray-500 text-sm">Completed</p>
-                                <p className="text-2xl font-bold text-gray-800">
-                                    {bookings.filter(b => b.status === 'completed').length}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {/* Stats */}
+                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                    {[
+                        { label: 'Bookings', val: bookings.length, icon: Calendar, color: 'text-azure' },
+                        { label: 'Confirmed', val: bookings.filter(b => b.status === 'confirmed').length, icon: CheckCircle, color: 'text-green-400' },
+                        { label: 'Pending', val: bookings.filter(b => b.status === 'pending').length, icon: Clock, color: 'text-yellow-400' },
+                        { label: 'Cancelled', val: bookings.filter(b => b.status === 'cancelled').length, icon: XCircle, color: 'text-red-400' }
+                    ].map((s, i) => (
+                        <motion.div key={i} variants={itemVariants} className="glass-card p-6 rounded-3xl border-white/5">
+                            <s.icon className={`w-6 h-6 ${s.color} mb-4`} />
+                            <div className="text-3xl font-bold text-white mb-1">{s.val}</div>
+                            <div className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{s.label}</div>
+                        </motion.div>
+                    ))}
+                </motion.div>
 
-                {/* Bookings Section */}
-                <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
-                    <div className="p-6 border-b border-gray-100">
-                        <h2 className="text-xl font-bold text-gray-800">Your Bookings</h2>
-                    </div>
+                {/* Bookings List */}
+                <div className="space-y-6">
+                    <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                        <Zap className="w-6 h-6 text-azure" /> Travel Log
+                    </h2>
 
                     {loading ? (
-                        <div className="p-12 text-center">
-                            <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
-                            <p className="text-gray-500">Loading your bookings...</p>
-                        </div>
-                    ) : error ? (
-                        <div className="p-12 text-center">
-                            <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-                            <p className="text-gray-600">{error}</p>
-                            <button
-                                onClick={fetchBookings}
-                                className="mt-4 text-blue-600 hover:underline"
-                            >
-                                Try again
-                            </button>
-                        </div>
+                        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-azure animate-spin" /></div>
                     ) : bookings.length === 0 ? (
-                        <div className="p-12 text-center">
-                            <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                            <p className="text-xl text-gray-600 font-semibold mb-2">No bookings yet</p>
-                            <p className="text-gray-500 mb-4">Start exploring and book your first guide!</p>
-                            <button
-                                onClick={() => navigate('/guide-booking')}
-                                className="bg-linear-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
-                            >
-                                Browse Guides
-                            </button>
+                        <div className="glass-panel p-20 rounded-[40px] text-center">
+                            <MapPin className="w-16 h-16 text-white/5 mx-auto mb-6" />
+                            <p className="text-xl text-gray-500 font-bold mb-8">No journeys logged yet.</p>
+                            <button onClick={() => navigate('/pakistan-destinations')} className="btn-premium px-8 py-3">Find a Destination</button>
                         </div>
                     ) : (
-                        <div className="divide-y divide-gray-100">
-                            {bookings.map((booking) => (
-                                <div key={booking.id} className="p-6 hover:bg-gray-50 transition-colors">
-                                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                        <div className="flex items-start gap-4">
-                                            <div className="w-14 h-14 bg-linear-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-xl font-bold shrink-0">
-                                                {booking.guide_name?.charAt(0) || 'G'}
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-gray-800 mb-1">{booking.guide_name}</h3>
-                                                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                                                    <span className="flex items-center gap-1">
-                                                        <MapPin className="w-4 h-4" />
-                                                        {booking.destination}
-                                                    </span>
-                                                    <span className="flex items-center gap-1">
-                                                        <Calendar className="w-4 h-4" />
-                                                        {new Date(booking.booking_date).toLocaleDateString('en-US', {
-                                                            weekday: 'short',
-                                                            year: 'numeric',
-                                                            month: 'short',
-                                                            day: 'numeric'
-                                                        })}
-                                                    </span>
-                                                    <span className="flex items-center gap-1">
-                                                        <Clock className="w-4 h-4" />
-                                                        {booking.duration_days} {booking.duration_days === 1 ? 'day' : 'days'}
-                                                    </span>
-                                                </div>
-                                                {booking.special_requests && (
-                                                    <p className="text-sm text-gray-400 mt-2 italic">
-                                                        "{booking.special_requests}"
-                                                    </p>
-                                                )}
-                                            </div>
+                        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid gap-4">
+                            {bookings.map((b) => (
+                                <motion.div key={b.id} variants={itemVariants} className="glass-panel p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between border-white/5 hover:border-azure/20 transition-all group">
+                                    <div className="flex items-center gap-6 w-full">
+                                        <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center font-bold text-white text-2xl group-hover:bg-azure transition-colors">
+                                            {b.guide_name?.charAt(0)}
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <span className={`flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium capitalize ${getStatusColor(booking.status)}`}>
-                                                {getStatusIcon(booking.status)}
-                                                {booking.status}
-                                            </span>
-
-                                            {/* Write Review Button */}
-                                            {canWriteReview(booking) ? (
-                                                <button
-                                                    onClick={() => handleWriteReview(booking)}
-                                                    className="flex items-center gap-1 px-4 py-2 bg-linear-to-r from-yellow-400 to-orange-500 text-white rounded-full text-sm font-medium hover:shadow-lg transition-all"
-                                                >
-                                                    <Star className="w-4 h-4" />
-                                                    Write Review
-                                                </button>
-                                            ) : hasReviewedBooking(booking.id) ? (
-                                                <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-                                                    <CheckCircle className="w-4 h-4" />
-                                                    Reviewed
-                                                </span>
-                                            ) : null}
-
-                                            {/* Cancel Booking Button - show for pending or confirmed */}
-                                            {(booking.status === 'pending' || booking.status === 'confirmed') && (
-                                                <button
-                                                    onClick={() => handleDeleteBooking(booking.id)}
-                                                    className="flex items-center gap-1 px-3 py-1 text-red-600 hover:bg-red-50 rounded-full text-sm font-medium transition-all"
-                                                >
-                                                    <XCircle className="w-4 h-4" />
-                                                    Cancel
-                                                </button>
-                                            )}
+                                        <div>
+                                            <h3 className="text-xl font-bold text-white mb-1 group-hover:text-azure transition-colors">{b.guide_name}</h3>
+                                            <div className="flex flex-wrap gap-4 text-xs text-gray-500 font-medium">
+                                                <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-azure" />{b.destination}</span>
+                                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3 text-azure" />{new Date(b.booking_date).toDateString()}</span>
+                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-azure" />{b.duration_days} Days</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                    <div className="flex items-center gap-4 mt-6 md:mt-0 w-full md:w-auto justify-end">
+                                        <div className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest ${b.status === 'confirmed' ? 'bg-green-500/10 text-green-400' :
+                                                b.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' :
+                                                    'bg-red-500/10 text-red-400'
+                                            }`}>
+                                            {b.status}
+                                        </div>
+                                        {(b.status === 'pending' || b.status === 'confirmed') && (
+                                            <button onClick={() => handleDeleteBooking(b.id)} className="p-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </motion.div>
                             ))}
-                        </div>
+                        </motion.div>
                     )}
                 </div>
-
-                {/* Quick Actions */}
-                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <button
-                        onClick={() => navigate('/guide-booking')}
-                        className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all text-left group"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="font-bold text-gray-800 mb-1">Book Another Guide</h3>
-                                <p className="text-gray-500 text-sm">Explore more destinations with expert guides</p>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                    </button>
-                    <button
-                        onClick={() => navigate('/review')}
-                        className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all text-left group"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="font-bold text-gray-800 mb-1">View All Reviews</h3>
-                                <p className="text-gray-500 text-sm">See what other travelers are saying</p>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                    </button>
-                </div>
             </div>
-
-            {/* Review Modal */}
-            <ReviewForm
-                booking={selectedBooking}
-                isOpen={showReviewModal}
-                onClose={() => setShowReviewModal(false)}
-                onSuccess={handleReviewSuccess}
-            />
         </div>
     );
 };

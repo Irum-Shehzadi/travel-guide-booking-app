@@ -118,7 +118,7 @@ const GuideLogin = () => {
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     onFocus={() => setFocused('email')}
                                     onBlur={() => setFocused('')}
-                                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-500 focus:bg-white focus:outline-none transition-all duration-300"
+                                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
                                     required
                                 />
                             </div>
@@ -134,7 +134,7 @@ const GuideLogin = () => {
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     onFocus={() => setFocused('password')}
                                     onBlur={() => setFocused('')}
-                                    className="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-500 focus:bg-white focus:outline-none transition-all duration-300"
+                                    className="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
                                     required
                                 />
                                 <button
