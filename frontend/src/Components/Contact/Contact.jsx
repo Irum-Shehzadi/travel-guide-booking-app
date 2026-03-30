@@ -39,28 +39,28 @@ const Contact = () => {
   };
 
   return (
-    <div className="bg-aurora min-h-screen pt-24 pb-20 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
-        <header className="text-center mb-20 relative">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="inline-block px-4 py-1.5 rounded-full bg-azure/10 text-azure text-xs font-bold uppercase tracking-widest mb-6">
+    <div className="bg-aurora min-h-screen pt-20 sm:pt-24 pb-16 sm:pb-20 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <header className="text-center mb-12 sm:mb-20 relative">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="inline-block px-4 py-1.5 rounded-full bg-azure/10 text-azure text-xs font-bold uppercase tracking-widest mb-4 sm:mb-6">
             Get in Touch
           </motion.div>
-          <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-4xl md:text-6xl font-extrabold text-white mb-6">
+          <motion.h1 initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="text-3xl sm:text-4xl md:text-6xl font-extrabold text-white mb-4 sm:mb-6">
             Let's Start Your <span className="text-gradient">Adventure</span>
           </motion.h1>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-gray-400 text-lg max-w-2xl mx-auto">
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto">
             Ready to explore Pakistan's hidden gems? Send us a message and we'll help you plan the trip of a lifetime.
           </motion.p>
         </header>
 
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
+        <div className="grid lg:grid-cols-2 gap-10 sm:gap-16 items-start">
           {/* Info Side */}
-          <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="space-y-8">
-            <div className="glass-panel p-10 rounded-[40px] border-azure/20 relative overflow-hidden">
+          <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="space-y-6 sm:space-y-8">
+            <div className="glass-panel p-6 sm:p-10 rounded-3xl md:rounded-[40px] border-azure/20 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-5">
-                <MessageSquare className="w-40 h-40 text-azure" />
+                <MessageSquare className="w-32 h-32 sm:w-40 sm:h-40 text-azure" />
               </div>
-              <h2 className="text-3xl font-bold text-white mb-8">Contact Information</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 sm:mb-8">Contact Information</h2>
 
               <div className="space-y-6">
                 {[
@@ -82,8 +82,8 @@ const Contact = () => {
               </div>
             </div>
 
-            <div className="glass-card p-8 rounded-[30px] flex items-center gap-4 border-azure/10">
-              <div className="w-12 h-12 rounded-xl bg-azure/10 flex items-center justify-center">
+            <div className="glass-card p-6 sm:p-8 rounded-2xl md:rounded-[30px] flex items-center gap-4 border-azure/10">
+              <div className="w-12 h-12 shrink-0 rounded-xl bg-azure/10 flex items-center justify-center">
                 <Zap className="w-6 h-6 text-azure" />
               </div>
               <p className="text-gray-400 text-sm">We typically respond to all inquiries within 2 hours during business hours.</p>
@@ -92,9 +92,9 @@ const Contact = () => {
 
           {/* Form Side */}
           <motion.div initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="relative">
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-azure/10 blur-[100px] rounded-full" />
+            <div className="absolute -top-10 -right-10 sm:-top-20 sm:-right-20 w-48 h-48 sm:w-64 sm:h-64 bg-azure/10 blur-[80px] sm:blur-[100px] rounded-full" />
 
-            <form onSubmit={handleSubmit} className="glass-panel p-10 rounded-[40px] border-white/5 relative z-10 space-y-6">
+            <form onSubmit={handleSubmit} className="glass-panel p-6 sm:p-10 rounded-3xl md:rounded-[40px] border-white/5 relative z-10 space-y-5 sm:space-y-6">
               <AnimatePresence>
                 {success && (
                   <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-green-500/10 border border-green-500/20 p-4 rounded-2xl flex items-center gap-3 text-green-400 text-sm">

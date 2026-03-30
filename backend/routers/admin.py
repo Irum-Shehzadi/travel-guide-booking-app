@@ -101,3 +101,11 @@ async def delete_booking_admin(booking_id: str):
     db = await get_database()
     await db.bookings.delete_one({"_id": ObjectId(booking_id)})
     return {"message": "Deleted"}
+
+@router.delete("/destination_review/{review_id}")
+async def delete_destination_review_admin(review_id: str):
+    db = await get_database()
+    result = await db.destination_reviews.delete_one({"_id": ObjectId(review_id)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Review not found")
+    return {"message": "Deleted"}

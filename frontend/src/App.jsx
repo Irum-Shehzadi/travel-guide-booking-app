@@ -1,31 +1,34 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import HeroSection from "./Components/HeroSection";
 import Contact from "./Components/Contact/Contact";
 import Footer from "./Components/Footer";
-import GuideBooking from "./Components/Pages/GuideBooking";
+import GuideBooking from "./Components/Pages/Guide/GuideBooking";
 import ProtectedRoute from "./Components/ProtectedRoute";
 
 // Page imports
-import TravelerSign from "./Components/Pages/TravelerSign";
-import GuideRegistration from "./Components/Pages/GuideRegistration";
+import TravelerSign from "./Components/Pages/Traveler/TravelerSign";
+import GuideRegistration from "./Components/Pages/Guide/GuideRegistration";
 import About from "./Components/Pages/About";
 import PakistanDestinations from "./Components/Pages/PakistanDestination";
-import TravelerDashboard from "./Components/Pages/TravelerDashboard";
-import GuideDashboard from "./Components/Pages/GuideDashboard";
-import GuideLogin from "./Components/Pages/GuideLogin";
-import AdminMessages from "./Components/Pages/AdminMessages";
-import GuideProfile from "./Components/Pages/GuideProfile";
+import TravelerDashboard from "./Components/Pages/Traveler/TravelerDashboard";
+import GuideDashboard from "./Components/Pages/Guide/GuideDashboard";
+import GuideLogin from "./Components/Pages/Guide/GuideLogin";
+import AdminMessages from "./Components/Pages/Admin/AdminMessages";
+import GuideProfile from "./Components/Pages/Guide/GuideProfile";
 
 
 // Admin imports
-import AdminLogin from "./Components/Pages/AdminLogin";
-import AdminDashboard from "./Components/Pages/AdminDashboard";
+import AdminLogin from "./Components/Pages/Admin/AdminLogin";
+import AdminDashboard from "./Components/Pages/Admin/AdminDashboard";
 
 function App() {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
   return (
     <>
-      <Navbar />
+      {!isAdminRoute && <Navbar />}
       <Routes>
         {/* Public routes - accessible without login */}
         <Route path="/" element={<HeroSection />} />
@@ -55,7 +58,7 @@ function App() {
 
         <Route path="/pakistan-destinations" element={<ProtectedRoute><PakistanDestinations /></ProtectedRoute>} />
       </Routes>
-      <Footer />
+      {!isAdminRoute && <Footer />}
     </>
   );
 }

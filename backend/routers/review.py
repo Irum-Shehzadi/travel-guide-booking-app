@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, status
-from models import ReviewCreate
+from models import ReviewCreate, DestinationReviewCreate, NotificationType
 from database import get_database
 from datetime import datetime
 from bson import ObjectId
+from routers.notification import create_and_send_notification
 
 router = APIRouter(prefix="/api/review", tags=["Review"])
 
@@ -74,6 +75,18 @@ async def create_review(review: ReviewCreate):
             {"_id": ObjectId(review.guide_id)},
             {"$set": {"rating": round(avg_rating, 1)}}
         )
+
+    # Notify the guide about new review
+    star_text = "⭐" * review.rating
+    await create_and_send_notification(
+        recipient_email=guide["email"],
+        recipient_type="guide",
+        notif_type=NotificationType.REVIEW_RECEIVED,
+        title=f"New Review {star_text}",
+        message=f"{review.traveler_name} left a {review.rating}-star review: \"{review.comment[:60]}...\"",
+        link="/guide-dashboard",
+        metadata={"review_id": str(result.inserted_id), "rating": review.rating}
+    )
     
     return {
         "message": "Review submitted successfully",
@@ -231,3 +244,57 @@ async def delete_review(review_id: str, email: str):
         )
     
     return {"message": "Review deleted successfully"}
+
+@router.post("/destination/create", status_code=status.HTTP_201_CREATED)
+async def create_destination_review(review: DestinationReviewCreate):
+    """Create a new review for a destination"""
+    db = await get_database()
+    
+    review_doc = {
+        "destination_name": review.destination_name,
+        "traveler_email": review.traveler_email,
+        "traveler_name": review.traveler_name,
+        "rating": review.rating,
+        "comment": review.comment,
+        "created_at": datetime.utcnow()
+    }
+    
+    result = await db.destination_reviews.insert_one(review_doc)
+    return {"message": "Destination review submitted", "id": str(result.inserted_id)}
+
+@router.get("/destination/{name}")
+async def get_destination_reviews(name: str):
+    """Get all reviews for a specific destination"""
+    db = await get_database()
+    reviews = await db.destination_reviews.find({"destination_name": name}).sort("created_at", -1).to_list(length=100)
+    
+    result = []
+    for r in reviews:
+        result.append({
+            "id": str(r["_id"]),
+            "traveler_name": r["traveler_name"],
+            "rating": r["rating"],
+            "comment": r["comment"],
+            "created_at": r["created_at"].isoformat() if r.get("created_at") else None
+        })
+    return {"reviews": result, "total": len(result)}
+
+@router.get("/destination-all/list")
+async def get_all_destination_reviews():
+    """Get all destination reviews (for admin)"""
+    db = await get_database()
+    
+    reviews = await db.destination_reviews.find().sort("created_at", -1).to_list(length=500)
+    
+    reviews_list = []
+    for review in reviews:
+        reviews_list.append({
+            "id": str(review["_id"]),
+            "destination_name": review.get("destination_name", "Unknown"),
+            "traveler_name": review.get("traveler_name"),
+            "rating": review.get("rating"),
+            "comment": review.get("comment"),
+            "created_at": review["created_at"].isoformat() if review.get("created_at") else None
+        })
+    
+    return {"reviews": reviews_list, "total": len(reviews_list)}

@@ -159,6 +159,25 @@ class ReviewInDB(BaseModel):
     booking_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
+# Destination Review Models
+class DestinationReviewCreate(BaseModel):
+    destination_name: str
+    traveler_email: str
+    traveler_name: str
+    rating: int = Field(ge=1, le=5)
+    comment: str
+
+class DestinationReviewInDB(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
+    
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
+    destination_name: str
+    traveler_email: str
+    traveler_name: str
+    rating: int
+    comment: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
 # Places API Models
 class PlaceSearchRequest(BaseModel):
     query: str
@@ -184,3 +203,36 @@ class PlacesSearchResponse(BaseModel):
     places: List[PlaceResult]
     search_params: dict
     credits: Optional[int] = None
+
+# Notification Models
+class NotificationType(str, Enum):
+    BOOKING_NEW = "booking_new"
+    BOOKING_CONFIRMED = "booking_confirmed"
+    BOOKING_CANCELLED = "booking_cancelled"
+    BOOKING_COMPLETED = "booking_completed"
+    REVIEW_RECEIVED = "review_received"
+    GUIDE_VERIFIED = "guide_verified"
+    SYSTEM = "system"
+
+class NotificationCreate(BaseModel):
+    recipient_email: str
+    recipient_type: str  # "traveler", "guide", "admin"
+    type: NotificationType
+    title: str
+    message: str
+    link: Optional[str] = None
+    metadata: Optional[dict] = None
+
+class NotificationInDB(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
+
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
+    recipient_email: str
+    recipient_type: str
+    type: NotificationType
+    title: str
+    message: str
+    link: Optional[str] = None
+    metadata: Optional[dict] = None
+    is_read: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)

@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, status
-from models import BookingCreate, BookingUpdate, BookingStatus
+from models import BookingCreate, BookingUpdate, BookingStatus, NotificationType
 from database import get_database
 from datetime import datetime
 from bson import ObjectId
+from routers.notification import create_and_send_notification
 
 router = APIRouter(prefix="/api/booking", tags=["Booking"])
 
@@ -68,6 +69,17 @@ async def create_booking(booking: BookingCreate):
     await db.guides.update_one(
         {"_id": ObjectId(booking.guide_id)},
         {"$inc": {"total_bookings": 1}}
+    )
+
+    # Send real-time notification to guide
+    await create_and_send_notification(
+        recipient_email=guide["email"],
+        recipient_type="guide",
+        notif_type=NotificationType.BOOKING_NEW,
+        title="New Booking Request!",
+        message=f"{booking.traveler_name} wants to book you for {booking.destination} on {booking.booking_date}.",
+        link="/guide-dashboard",
+        metadata={"booking_id": str(result.inserted_id), "traveler_name": booking.traveler_name, "destination": booking.destination}
     )
     
     return {
@@ -242,6 +254,30 @@ async def update_booking_status(booking_id: str, update: BookingUpdate):
             }
         }
     )
+
+    # Send real-time notification to the traveler
+    status_messages = {
+        BookingStatus.CONFIRMED: ("Booking Confirmed! ✅", f"Your booking for {booking['destination']} with {booking['guide_name']} has been confirmed!"),
+        BookingStatus.CANCELLED: ("Booking Cancelled ❌", f"Your booking for {booking['destination']} with {booking['guide_name']} has been cancelled."),
+        BookingStatus.COMPLETED: ("Trip Completed! 🎉", f"Your trip to {booking['destination']} with {booking['guide_name']} is marked as completed. Leave a review!"),
+    }
+
+    if update.status in status_messages:
+        title, message = status_messages[update.status]
+        notif_type_map = {
+            BookingStatus.CONFIRMED: NotificationType.BOOKING_CONFIRMED,
+            BookingStatus.CANCELLED: NotificationType.BOOKING_CANCELLED,
+            BookingStatus.COMPLETED: NotificationType.BOOKING_COMPLETED,
+        }
+        await create_and_send_notification(
+            recipient_email=booking["traveler_email"],
+            recipient_type="traveler",
+            notif_type=notif_type_map[update.status],
+            title=title,
+            message=message,
+            link="/traveler-dashboard",
+            metadata={"booking_id": booking_id, "guide_name": booking["guide_name"], "destination": booking["destination"]}
+        )
     
     return {
         "message": f"Booking status updated to {update.status.value}",

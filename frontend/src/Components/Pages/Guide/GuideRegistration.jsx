@@ -299,29 +299,29 @@ const GuideRegistration = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-purple-50 to-pink-50 py-12 px-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-purple-50 to-pink-50 py-8 sm:py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-linear-to-r from-blue-600 to-purple-600 rounded-full mb-4 shadow-lg">
-            <Shield className="w-8 h-8 text-white" />
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-linear-to-r from-blue-600 to-purple-600 rounded-full mb-3 sm:mb-4 shadow-lg">
+            <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
             Become a Guide
           </h1>
-          <p className="text-gray-600">Join our community of expert travel guides</p>
+          <p className="text-sm sm:text-base text-gray-600">Join our community of expert travel guides</p>
         </div>
 
         {/* Progress Bar */}
-        <div className="bg-white rounded-2xl p-6 shadow-lg mb-8">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-lg mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-4">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center flex-1">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold transition-all duration-300 ${step >= s
+                <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-xs sm:text-base font-semibold transition-all duration-300 ${step >= s
                   ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-110'
                   : 'bg-gray-200 text-gray-500'
                   }`}>
-                  {step > s ? <CheckCircle className="w-6 h-6" /> : s}
+                  {step > s ? <CheckCircle className="w-4 h-4 sm:w-6 sm:h-6" /> : s}
                 </div>
                 {s < 3 && (
                   <div className={`flex-1 h-1 mx-2 rounded-full transition-all duration-300 ${step > s ? 'bg-linear-to-r from-blue-600 to-purple-600' : 'bg-gray-200'
@@ -330,16 +330,16 @@ const GuideRegistration = () => {
               </div>
             ))}
           </div>
-          <div className="flex justify-between text-xs text-gray-600 font-medium">
+          <div className="flex justify-between text-[10px] sm:text-xs text-gray-600 font-medium">
             <span>Personal Info</span>
-            <span>Skills & Experience</span>
+            <span>Skills & Exp</span>
             <span>Verification</span>
           </div>
         </div>
 
         {/* Form Container */}
         <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-          <div className="p-8 md:p-10">
+          <div className="p-5 sm:p-8 md:p-10">
             {/* Error Message */}
             {error && (
               <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">

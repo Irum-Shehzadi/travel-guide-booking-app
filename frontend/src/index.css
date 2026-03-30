@@ -1,20 +1,34 @@
 @import "tailwindcss";
 
 :root {
-    --obsidian: #0a0f1e;
-    --azure: #0ea5e9;
-    --aurora: #8b5cf6;
-    --aurora-glow: rgba(139, 92, 246, 0.15);
-    --glass-bg: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    /* Backgrounds: Light airy tones representing overall terrain */
+    --surface-light: #FDFBFA; /* Soft sandy/cloud white */
+    --surface-alt: #F4F1EA; /* Warm beige like Balochistan rocks */
+    
+    /* Accents: Rivers, Lakes, Valleys */
+    --lake-blue: #0284C7; /* Deep blue of northern lakes / Neelum */
+    --river-cyan: #0891B2; /* Turquoise of Attabad lake */
+    --valley-green: #10B981; /* Lush green of KPK valleys/Kalam */
+    --rocky-accent: #D97706; /* Terracotta/warm amber of southern mountains */
+    
+    /* Text Colors */
+    --text-main: #1C1917; /* Dark stone / near black */
+    --text-muted: #57534E; /* Warm gray */
+    
+    /* UI Elements */
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: rgba(0, 0, 0, 0.05);
+    
+    /* Fonts */
     --font-display: 'Outfit', sans-serif;
     --font-body: 'Inter', sans-serif;
 }
 
 body {
     margin: 0;
-    background-color: var(--obsidian);
-    color: #f8fafc;
+    background-color: var(--surface-light);
+    color: var(--text-main);
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -24,6 +38,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
+    color: var(--text-main);
 }
 
 /* Custom Scrollbar */
@@ -32,48 +47,53 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--obsidian);
+    background: var(--surface-light);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.15);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--azure);
+    background: var(--valley-green);
 }
 
 /* Premium Gradients */
+/* Repurposed classes to avoid changing HTML everywhere, adapting to light theme */
 .bg-aurora {
-    background: linear-gradient(135deg, #0a0f1e 0%, #171941 100%);
+    background: linear-gradient(135deg, var(--surface-light) 0%, #E8F0EA 100%);
 }
 
 .text-gradient {
-    background: linear-gradient(to right, #38bdf8, #818cf8, #c084fc);
+    /* Gradient representing water and greenery */
+    background: linear-gradient(to right, var(--lake-blue), var(--valley-green));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-/* Glassmorphism Utility */
+/* Glassmorphism Utility (Light Version) */
 .glass-panel {
     background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px var(--glass-shadow);
 }
 
 .glass-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: all 0.3s ease;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.6) 100%);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-main);
 }
 
 .glass-card:hover {
-    border-color: var(--azure);
+    border-color: var(--valley-green);
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.3);
+    box-shadow: 0 15px 35px -10px rgba(16, 185, 129, 0.15);
 }
 
 /* Glow Effects */
@@ -81,16 +101,17 @@ h1, h2, h3, h4, h5, h6 {
     position: absolute;
     width: 400px;
     height: 400px;
-    background: var(--aurora-glow);
+    background: var(--valley-green);
+    opacity: 0.15;
     filter: blur(100px);
     border-radius: 50%;
     pointer-events: none;
     z-index: 0;
 }
 
-/* Button Premium Styles */
+/* Button Premium Styles - Nature Theme */
 .btn-premium {
-    background: linear-gradient(135deg, var(--azure), var(--aurora));
+    background: linear-gradient(135deg, var(--valley-green), var(--lake-blue));
     color: white;
     border: none;
     padding: 10px 24px;
@@ -98,10 +119,10 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
 }
 
 .btn-premium:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(14, 165, 233, 0.4);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
 }

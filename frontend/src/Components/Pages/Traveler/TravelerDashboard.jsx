@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
     User, Calendar, MapPin, Clock, CheckCircle, XCircle, Loader2,
@@ -62,33 +62,33 @@ const TravelerDashboard = () => {
     if (authLoading) return <div className="min-h-screen bg-aurora flex items-center justify-center"><Loader2 className="w-10 h-10 text-azure animate-spin" /></div>;
 
     return (
-        <div className="min-h-screen bg-aurora pt-24 pb-20">
-            <div className="max-w-7xl mx-auto px-6">
+        <div className="min-h-screen bg-aurora pt-20 sm:pt-24 pb-16 sm:pb-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 {/* Header Card */}
                 <motion.div
                     initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                    className="glass-panel p-8 md:p-12 rounded-[40px] border-azure/20 mb-10 relative overflow-hidden group"
+                    className="glass-panel p-6 sm:p-8 md:p-12 rounded-3xl md:rounded-[40px] border-azure/20 mb-6 sm:mb-10 relative overflow-hidden group"
                 >
                     <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
                         <Compass className="w-40 h-40 text-azure" />
                     </div>
-                    <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-azure to-aurora p-1">
-                            <div className="w-full h-full rounded-full bg-obsidian flex items-center justify-center text-3xl font-bold text-white">
+                    <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8 relative z-10">
+                        <div className="w-20 h-20 md:w-24 md:h-24 shrink-0 rounded-full bg-gradient-to-tr from-azure to-aurora p-1">
+                            <div className="w-full h-full rounded-full bg-obsidian flex items-center justify-center text-2xl md:text-3xl font-bold text-white">
                                 {user?.name?.charAt(0)}
                             </div>
                         </div>
                         <div className="text-center md:text-left">
-                            <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2 underline decoration-azure decoration-4 underline-offset-8">Hello, {user?.name}!</h1>
-                            <p className="text-gray-500 font-medium flex items-center gap-2">
-                                <Mail className="w-4 h-4 text-azure" /> {user?.email}
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2 underline decoration-azure decoration-4 underline-offset-8">Hello, {user?.name}!</h1>
+                            <p className="text-gray-500 font-medium flex items-center justify-center md:justify-start gap-2 break-all">
+                                <Mail className="w-4 h-4 text-azure shrink-0" /> {user?.email}
                             </p>
                         </div>
                     </div>
                 </motion.div>
 
                 {/* Stats */}
-                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
                     {[
                         { label: 'Bookings', val: bookings.length, icon: Calendar, color: 'text-azure' },
                         { label: 'Confirmed', val: bookings.filter(b => b.status === 'confirmed').length, icon: CheckCircle, color: 'text-green-400' },
@@ -112,7 +112,7 @@ const TravelerDashboard = () => {
                     {loading ? (
                         <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-azure animate-spin" /></div>
                     ) : bookings.length === 0 ? (
-                        <div className="glass-panel p-20 rounded-[40px] text-center">
+                        <div className="glass-panel p-10 sm:p-20 rounded-3xl md:rounded-[40px] text-center">
                             <MapPin className="w-16 h-16 text-white/5 mx-auto mb-6" />
                             <p className="text-xl text-gray-500 font-bold mb-8">No journeys logged yet.</p>
                             <button onClick={() => navigate('/pakistan-destinations')} className="btn-premium px-8 py-3">Find a Destination</button>
@@ -120,24 +120,24 @@ const TravelerDashboard = () => {
                     ) : (
                         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid gap-4">
                             {bookings.map((b) => (
-                                <motion.div key={b.id} variants={itemVariants} className="glass-panel p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between border-white/5 hover:border-azure/20 transition-all group">
-                                    <div className="flex items-center gap-6 w-full">
-                                        <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center font-bold text-white text-2xl group-hover:bg-azure transition-colors">
+                                <motion.div key={b.id} variants={itemVariants} className="glass-panel p-5 sm:p-6 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between md:gap-4 border-white/5 hover:border-azure/20 transition-all group">
+                                    <div className="flex items-center gap-4 sm:gap-6 w-full">
+                                        <div className="w-12 h-12 sm:w-16 sm:h-16 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center font-bold text-white text-xl sm:text-2xl group-hover:bg-azure transition-colors">
                                             {b.guide_name?.charAt(0)}
                                         </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-white mb-1 group-hover:text-azure transition-colors">{b.guide_name}</h3>
-                                            <div className="flex flex-wrap gap-4 text-xs text-gray-500 font-medium">
-                                                <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-azure" />{b.destination}</span>
-                                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3 text-azure" />{new Date(b.booking_date).toDateString()}</span>
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-azure" />{b.duration_days} Days</span>
+                                        <div className="min-w-0 flex-1">
+                                            <h3 className="text-lg sm:text-xl font-bold text-white mb-1 group-hover:text-azure transition-colors truncate">{b.guide_name}</h3>
+                                            <div className="flex flex-wrap gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-500 font-medium">
+                                                <span className="flex items-center gap-1"><MapPin className="w-3 h-3 shrink-0 text-azure" /><span className="truncate">{b.destination}</span></span>
+                                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3 shrink-0 text-azure" />{new Date(b.booking_date).toDateString()}</span>
+                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 shrink-0 text-azure" />{b.duration_days} Days</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-4 mt-6 md:mt-0 w-full md:w-auto justify-end">
-                                        <div className={`px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest ${b.status === 'confirmed' ? 'bg-green-500/10 text-green-400' :
-                                                b.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' :
-                                                    'bg-red-500/10 text-red-400'
+                                    <div className="flex items-center gap-3 sm:gap-4 mt-4 sm:mt-6 md:mt-0 w-full md:w-auto justify-end">
+                                        <div className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest text-center ${b.status === 'confirmed' ? 'bg-green-500/10 text-green-400' :
+                                            b.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' :
+                                                'bg-red-500/10 text-red-400'
                                             }`}>
                                             {b.status}
                                         </div>

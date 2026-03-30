@@ -1,12 +1,25 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import connect_to_mongo, close_mongo_connection
-from routers import traveler, guide, booking, review, contact, upload, weather, places, admin
+from routers import traveler, guide, booking, review, contact, upload, weather, places, admin, notification
+
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup event logic
+    await connect_to_mongo()
+    print("Application started successfully!")
+    yield
+    # Shutdown event logic
+    await close_mongo_connection()
+    print("Application shut down")
 
 app = FastAPI(
     title="Travel Booking API",
     description="Backend API for Travel Booking Guide Platform",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS Middleware 
@@ -43,18 +56,6 @@ async def validation_exception_handler(request, exc):
         }
     )
 
-# Startup event 
-@app.on_event("startup")
-async def startup_db_client():
-    await connect_to_mongo()
-    print("Application started successfully!")
-
-# Shutdown event 
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    await close_mongo_connection()
-    print("Application shut down")
-
 # Include routers
 app.include_router(traveler.router)
 app.include_router(guide.router)
@@ -65,6 +66,7 @@ app.include_router(upload.router)
 app.include_router(weather.router)
 app.include_router(places.router)
 app.include_router(admin.router)
+app.include_router(notification.router)
 
 # Root endpoint
 @app.get("/")

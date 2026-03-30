@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, MapPin, Shield, ArrowRight } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../context/AuthContext';
 
 const GuideLogin = () => {
     const [showPassword, setShowPassword] = useState(false);
