@@ -1,28 +1,38 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
     /* Backgrounds: Light airy tones representing overall terrain */
-    --surface-light: #FDFBFA; /* Soft sandy/cloud white */
-    --surface-alt: #F4F1EA; /* Warm beige like Balochistan rocks */
-    
+    --surface-light: #FDFBFA;
+    /* Soft sandy/cloud white */
+    --surface-alt: #F4F1EA;
+    /* Warm beige like Balochistan rocks */
+
     /* Accents: Rivers, Lakes, Valleys */
-    --lake-blue: #0284C7; /* Deep blue of northern lakes / Neelum */
-    --river-cyan: #0891B2; /* Turquoise of Attabad lake */
-    --valley-green: #10B981; /* Lush green of KPK valleys/Kalam */
-    --rocky-accent: #D97706; /* Terracotta/warm amber of southern mountains */
-    
+    --lake-blue: #0284C7;
+    /* Deep blue of northern lakes / Neelum */
+    --river-cyan: #0891B2;
+    /* Turquoise of Attabad lake */
+    --valley-green: #10B981;
+    /* Lush green of KPK valleys/Kalam */
+    --rocky-accent: #D97706;
+    /* Terracotta/warm amber of southern mountains */
+
     /* Text Colors */
-    --text-main: #1C1917; /* Dark stone / near black */
-    --text-muted: #57534E; /* Warm gray */
-    
+    --text-main: #1C1917;
+    /* Dark stone / near black */
+    --text-muted: #57534E;
+    /* Warm gray */
+
     /* UI Elements */
     --glass-bg: rgba(255, 255, 255, 0.75);
     --glass-border: rgba(255, 255, 255, 0.5);
     --glass-shadow: rgba(0, 0, 0, 0.05);
-    
+
     /* Fonts */
-    --font-display: 'Outfit', sans-serif;
+    --font-display: 'Playfair Display', serif;
     --font-body: 'Inter', sans-serif;
+    --font-cursive: 'Dancing Script', cursive;
 }
 
 body {
@@ -35,7 +45,12 @@ body {
     overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
     color: var(--text-main);
@@ -68,8 +83,13 @@ h1, h2, h3, h4, h5, h6 {
 .text-gradient {
     /* Gradient representing water and greenery */
     background: linear-gradient(to right, var(--lake-blue), var(--valley-green));
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+.font-cursive {
+    font-family: var(--font-cursive);
 }
 
 /* Glassmorphism Utility (Light Version) */
@@ -125,4 +145,4 @@ h1, h2, h3, h4, h5, h6 {
 .btn-premium:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.35);
-}
+}

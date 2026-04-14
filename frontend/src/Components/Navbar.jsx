@@ -36,12 +36,12 @@ const Navbar = () => {
       <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'py-3 bg-white/80 backdrop-blur-md shadow-sm border-b border-stone-200/50' : 'py-4 bg-transparent'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" onClick={handleNavClick} className="flex items-center gap-2 sm:gap-3 group flex-shrink-0">
+          <Link to="/" onClick={handleNavClick} className="flex items-center gap-2 sm:gap-4 group flex-shrink-0">
             <div className="relative">
-              <img src={logo} alt="Logo" className="h-10 sm:h-12 w-auto object-contain drop-shadow-[0_0_15px_rgba(16,185,129,0.3)] group-hover:scale-105 transition-transform duration-300" />
+              <img src={logo} alt="Logo" className="h-12 sm:h-16 w-auto object-contain drop-shadow-[0_0_20px_rgba(16,185,129,0.4)] group-hover:scale-105 transition-transform duration-300 brightness-110 saturate-150 contrast-125" />
             </div>
-            <span className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 drop-shadow-sm" style={{ fontFamily: 'var(--font-display)' }}>
-              Travel<span className="text-emerald-600">Guide</span>
+            <span className="text-2xl sm:text-3xl font-black tracking-tight text-gradient drop-shadow-sm" style={{ fontFamily: 'var(--font-display)' }}>
+              TravelGuide
             </span>
           </Link>
 
@@ -143,8 +143,8 @@ const Navbar = () => {
           <div className="absolute top-0 right-0 h-full w-72 max-w-[85vw] bg-white border-l border-stone-200 shadow-2xl flex flex-col">
             <div className="flex items-center justify-between p-5 border-b border-stone-100">
               <Link to="/" onClick={handleNavClick} className="flex items-center gap-3">
-                <img src={logo} alt="Logo" className="h-10 sm:h-12 w-auto" />
-                <span className="text-xl font-black text-stone-900">Travel<span className="text-emerald-600">Guide</span></span>
+                <img src={logo} alt="Logo" className="h-12 sm:h-14 w-auto" />
+                <span className="text-2xl font-black text-gradient">TravelGuide</span>
               </Link>
               <button onClick={() => setOpen(false)} className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-lg transition-colors">
                 <X className="w-5 h-5" />

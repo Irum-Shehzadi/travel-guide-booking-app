@@ -1,5 +1,5 @@
 {
-    "url": "http://localhost:8000/api/guide/register",
+    "url": "http://localhost:8000/api/contact/submit",
     "errors": [
         {
             "type": "value_error",
@@ -14,5 +14,5 @@
             }
         }
     ],
-    "body": "{'fullName': 'irum', 'email': 'irum@123', 'phone': '12345678912', 'city': 'haripur', 'password': '123', 'experience': 0, 'about': 'guide', 'languages': ['English', 'Urdu'], 'specializations': ['Adventure Tourism'], 'certifications': '', 'profile_photo': '/api/upload/image/20260301_191412_28e32627.jpg', 'cnic_number': '133026-532644-7', 'cnic_photo': '/api/upload/image/20260301_191419_3bf26a3f.jpeg'}"
+    "body": "{'name': 'irum shehzadi', 'email': 'irum@123', 'message': 'plz there are errors in the website fix that errors '}"
 }

@@ -4,7 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
     User, Calendar, MapPin, Clock, CheckCircle, XCircle, Loader2,
-    AlertCircle, ChevronRight, Mail, Zap, Compass, Trash2
+    AlertCircle, ChevronRight, Mail, Zap, Compass, Trash2, Star, MessageSquare, X, Shield, ChevronDown
 } from 'lucide-react';
 
 const API_BASE_URL = "http://localhost:8000";
@@ -19,36 +19,131 @@ const itemVariants = {
     visible: { y: 0, opacity: 1 }
 };
 
+const ReviewForm = ({ booking, onClose, onSubmitted }) => {
+    const { user } = useAuth();
+    const [rating, setRating] = useState(5);
+    const [comment, setComment] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/review/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    guide_id: booking?.guide_id,
+                    traveler_email: user?.email,
+                    traveler_name: user?.name,
+                    rating: rating,
+                    comment: comment,
+                    booking_id: booking?.id
+                })
+            });
+            if (response.ok) {
+                const newReview = await response.json();
+                alert('Review shared successfully!');
+                onSubmitted(newReview.review); // Adjusting based on backend response
+                onClose();
+            } else {
+                const data = await response.json();
+                alert(data.detail || 'Failed to submit review');
+            }
+        } catch (err) {
+            alert('Error submitting review');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-stone-900/40 backdrop-blur-md flex items-center justify-center p-4"
+        >
+            <motion.div
+                initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+                className="bg-white w-full max-w-lg rounded-[40px] p-8 sm:p-10 shadow-2xl relative overflow-hidden"
+            >
+                <button onClick={onClose} className="absolute top-6 right-6 p-2 text-stone-300 hover:text-stone-900 transition-colors">
+                    <X className="w-6 h-6" />
+                </button>
+
+                <div className="text-center mb-8">
+                    <div className="w-16 h-16 bg-emerald-100 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-emerald-200">
+                        <MessageSquare className="w-8 h-8 text-emerald-600" />
+                    </div>
+                    <h2 className="text-3xl font-black text-stone-900 tracking-tight">Share Experience</h2>
+                    <p className="text-stone-500 font-bold uppercase text-[10px] tracking-widest mt-1">Review for {booking?.guide_name}</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="flex justify-center gap-2">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                            <button
+                                key={s} type="button" onClick={() => setRating(s)}
+                                className={`p-2 transition-all ${rating >= s ? "scale-110" : "grayscale opacity-30"}`}
+                            >
+                                <Star className={`w-10 h-10 ${rating >= s ? "fill-amber-400 text-amber-400" : "text-stone-300"}`} />
+                            </button>
+                        ))}
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Your Story</label>
+                        <textarea
+                            required rows="4" value={comment} onChange={(e) => setComment(e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-100 rounded-3xl p-5 text-sm font-medium focus:border-emerald-500 outline-none transition-all resize-none shadow-inner"
+                            placeholder="Tell others about your amazing journey..."
+                        ></textarea>
+                    </div>
+
+                    <button
+                        disabled={isSubmitting}
+                        className="btn-premium w-full py-5 rounded-2xl flex items-center justify-center gap-3 text-lg"
+                    >
+                        {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <><Zap className="w-6 h-6" /> Publish Review</>}
+                    </button>
+                </form>
+            </motion.div>
+        </motion.div>
+    );
+};
+
 const TravelerDashboard = () => {
     const { user, isAuthenticated, loading: authLoading } = useAuth();
     const navigate = useNavigate();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [myReviews, setMyReviews] = useState([]);
+    const [supportMessages, setSupportMessages] = useState([]);
+    const [expandedBooking, setExpandedBooking] = useState(null);
+    const [reviewingBooking, setReviewingBooking] = useState(null);
 
     useEffect(() => {
-        if (!authLoading && !isAuthenticated) {
-            navigate('/traveler-signin');
-            return;
+        if (!authLoading && !isAuthenticated) { navigate('/traveler-signin'); return; }
+        if (!authLoading && user && user.type === 'guide') { navigate('/guide-dashboard'); return; }
+        if (user?.email) {
+            fetchData();
         }
-        if (!authLoading && user && user.type === 'guide') {
-            navigate('/guide-dashboard');
-            return;
-        }
-        if (user?.email) fetchBookings();
-    }, [user, isAuthenticated, authLoading, navigate]);
+    }, [user, isAuthenticated, authLoading]);
 
-    const fetchBookings = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/api/booking/traveler/${user.email}`);
-            const data = await response.json();
-            setBookings(data.bookings || []);
-        } catch (err) {
-            setError('Unable to load your bookings');
-        } finally {
-            setLoading(false);
-        }
+            const [bRes, rRes, sRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/booking/traveler/${user.email}`),
+                fetch(`${API_BASE_URL}/api/review/traveler/${user.email}`),
+                fetch(`${API_BASE_URL}/api/contact/user/${user.email}`)
+            ]);
+            const bData = await bRes.json();
+            const rData = await rRes.json();
+            const sData = await sRes.json();
+            setBookings(bData.bookings || []);
+            setMyReviews(rData.reviews || []);
+            setSupportMessages(sData.messages || []);
+        } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
     const handleDeleteBooking = async (id) => {
@@ -59,100 +154,218 @@ const TravelerDashboard = () => {
         } catch (err) { alert('Failed to cancel'); }
     };
 
-    if (authLoading) return <div className="min-h-screen bg-aurora flex items-center justify-center"><Loader2 className="w-10 h-10 text-azure animate-spin" /></div>;
+    if (authLoading) return <div className="min-h-screen bg-aurora flex items-center justify-center"><Loader2 className="w-10 h-10 text-emerald-600 animate-spin" /></div>;
+    if (!user) return null;
+
+    const getStatusCount = (status) => {
+        return bookings.filter(b => (b.status || '').toLowerCase() === status.toLowerCase()).length;
+    };
 
     return (
-        <div className="min-h-screen bg-aurora pt-20 sm:pt-24 pb-16 sm:pb-20">
+        <div className="min-h-screen bg-aurora pt-24 pb-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 {/* Header Card */}
                 <motion.div
                     initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-                    className="glass-panel p-6 sm:p-8 md:p-12 rounded-3xl md:rounded-[40px] border-azure/20 mb-6 sm:mb-10 relative overflow-hidden group"
+                    className="glass-panel p-8 sm:p-12 rounded-[40px] border-white/60 mb-10 bg-white/60 shadow-xl relative overflow-hidden group"
                 >
                     <div className="absolute top-0 right-0 p-10 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <Compass className="w-40 h-40 text-azure" />
+                        <Compass className="w-48 h-48 text-emerald-600" />
                     </div>
-                    <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8 relative z-10">
-                        <div className="w-20 h-20 md:w-24 md:h-24 shrink-0 rounded-full bg-gradient-to-tr from-azure to-aurora p-1">
-                            <div className="w-full h-full rounded-full bg-obsidian flex items-center justify-center text-2xl md:text-3xl font-bold text-white">
-                                {user?.name?.charAt(0)}
-                            </div>
+                    <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+                        <div className="w-24 h-24 rounded-3xl bg-emerald-600 flex items-center justify-center text-4xl font-black text-white shadow-xl">
+                            {user?.name?.charAt(0)}
                         </div>
                         <div className="text-center md:text-left">
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2 underline decoration-azure decoration-4 underline-offset-8">Hello, {user?.name}!</h1>
-                            <p className="text-gray-500 font-medium flex items-center justify-center md:justify-start gap-2 break-all">
-                                <Mail className="w-4 h-4 text-azure shrink-0" /> {user?.email}
+                            <h1 className="text-3xl sm:text-5xl font-black text-stone-900 mb-2 font-display">Hello, <span className="text-emerald-600">{user?.name}!</span></h1>
+                            <p className="text-stone-500 font-bold flex items-center justify-center md:justify-start gap-2 italic">
+                                <Mail className="w-5 h-5 text-emerald-600" /> {user?.email}
                             </p>
                         </div>
                     </div>
                 </motion.div>
 
                 {/* Stats */}
-                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
                     {[
-                        { label: 'Bookings', val: bookings.length, icon: Calendar, color: 'text-azure' },
-                        { label: 'Confirmed', val: bookings.filter(b => b.status === 'confirmed').length, icon: CheckCircle, color: 'text-green-400' },
-                        { label: 'Pending', val: bookings.filter(b => b.status === 'pending').length, icon: Clock, color: 'text-yellow-400' },
-                        { label: 'Cancelled', val: bookings.filter(b => b.status === 'cancelled').length, icon: XCircle, color: 'text-red-400' }
+                        { label: 'Confirmed', val: getStatusCount('confirmed'), icon: CheckCircle, color: 'text-emerald-500' },
+                        { label: 'Pending', val: getStatusCount('pending'), icon: Clock, color: 'text-amber-500' },
+                        { label: 'Completed', val: getStatusCount('completed'), icon: Shield, color: 'text-cyan-600' },
+                        { label: 'Cancelled', val: getStatusCount('cancelled'), icon: XCircle, color: 'text-red-500' }
                     ].map((s, i) => (
-                        <motion.div key={i} variants={itemVariants} className="glass-card p-6 rounded-3xl border-white/5">
+                        <div key={i} className="glass-card p-6 rounded-3xl bg-white/70 shadow-sm transition-transform hover:scale-105">
                             <s.icon className={`w-6 h-6 ${s.color} mb-4`} />
-                            <div className="text-3xl font-bold text-white mb-1">{s.val}</div>
-                            <div className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{s.label}</div>
-                        </motion.div>
+                            <div className="text-3xl font-black text-stone-900 mb-1 font-display">{s.val}</div>
+                            <div className="text-stone-500 text-[10px] font-bold uppercase tracking-widest">{s.label}</div>
+                        </div>
                     ))}
-                </motion.div>
+                </div>
 
-                {/* Bookings List */}
-                <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                        <Zap className="w-6 h-6 text-azure" /> Travel Log
+                {/* Main Content */}
+                <div className="space-y-8">
+                    <h2 className="text-3xl font-black text-stone-900 flex items-center gap-4 px-2 font-display uppercase tracking-tight">
+                        <Zap className="w-8 h-8 text-emerald-600" /> Journey Log
                     </h2>
 
                     {loading ? (
-                        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-azure animate-spin" /></div>
+                        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-emerald-600 animate-spin" /></div>
                     ) : bookings.length === 0 ? (
-                        <div className="glass-panel p-10 sm:p-20 rounded-3xl md:rounded-[40px] text-center">
-                            <MapPin className="w-16 h-16 text-white/5 mx-auto mb-6" />
-                            <p className="text-xl text-gray-500 font-bold mb-8">No journeys logged yet.</p>
-                            <button onClick={() => navigate('/pakistan-destinations')} className="btn-premium px-8 py-3">Find a Destination</button>
+                        <div className="glass-panel p-20 rounded-[40px] text-center border-stone-200 bg-white/50">
+                            <MapPin className="w-16 h-16 text-stone-200 mx-auto mb-6" />
+                            <p className="text-xl text-stone-400 font-bold mb-8">No journeys logged yet.</p>
+                            <button onClick={() => navigate('/guide-booking')} className="btn-premium px-8 py-3">Book Your First Trip</button>
                         </div>
                     ) : (
-                        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid gap-4">
-                            {bookings.map((b) => (
-                                <motion.div key={b.id} variants={itemVariants} className="glass-panel p-5 sm:p-6 rounded-2xl md:rounded-3xl flex flex-col md:flex-row items-start md:items-center justify-between md:gap-4 border-white/5 hover:border-azure/20 transition-all group">
-                                    <div className="flex items-center gap-4 sm:gap-6 w-full">
-                                        <div className="w-12 h-12 sm:w-16 sm:h-16 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center font-bold text-white text-xl sm:text-2xl group-hover:bg-azure transition-colors">
-                                            {b.guide_name?.charAt(0)}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <h3 className="text-lg sm:text-xl font-bold text-white mb-1 group-hover:text-azure transition-colors truncate">{b.guide_name}</h3>
-                                            <div className="flex flex-wrap gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-500 font-medium">
-                                                <span className="flex items-center gap-1"><MapPin className="w-3 h-3 shrink-0 text-azure" /><span className="truncate">{b.destination}</span></span>
-                                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3 shrink-0 text-azure" />{new Date(b.booking_date).toDateString()}</span>
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 shrink-0 text-azure" />{b.duration_days} Days</span>
+                        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid gap-6">
+                            {bookings.map((b) => {
+                                const review = myReviews.find(r => r.booking_id === b.id);
+                                const isExpanded = expandedBooking === b.id;
+
+                                return (
+                                    <motion.div key={b.id} variants={itemVariants} className="glass-panel p-6 sm:p-8 rounded-[40px] border-stone-100 bg-white/80 shadow-sm hover:shadow-xl transition-all">
+                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-14 h-14 shrink-0 rounded-2xl bg-emerald-50 flex items-center justify-center font-black text-emerald-600 text-xl shadow-sm">
+                                                    {b.guide_name?.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-xl font-black text-stone-900 mb-1">{b.guide_name}</h3>
+                                                    <div className="flex flex-wrap gap-x-6 text-[10px] text-stone-400 font-bold uppercase tracking-widest">
+                                                        <span className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5 text-emerald-500" /> {b.destination}</span>
+                                                        <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-cyan-500" /> {new Date(b.booking_date).toDateString()}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-4 self-end lg:self-center">
+                                                <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${(b.status || '').toLowerCase() === 'confirmed' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+                                                        (b.status || '').toLowerCase() === 'pending' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                                                            (b.status || '').toLowerCase() === 'completed' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                                                                'bg-red-50 border-red-200 text-red-700'
+                                                    }`}>
+                                                    {b.status}
+                                                </div>
+
+                                                {review && (
+                                                    <button
+                                                        onClick={() => setExpandedBooking(isExpanded ? null : b.id)}
+                                                        className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${isExpanded ? 'bg-stone-900 text-white' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                                            }`}
+                                                    >
+                                                        <Star className={`w-3.5 h-3.5 ${isExpanded ? 'fill-white' : 'fill-emerald-700'}`} />
+                                                        {isExpanded ? 'Hide Feed' : 'View Review'}
+                                                    </button>
+                                                )}
+
+                                                {(b.status || '').toLowerCase() === 'completed' && !review && (
+                                                    <button onClick={() => setReviewingBooking(b)} className="btn-premium px-6 py-2.5 rounded-xl text-[10px] flex items-center gap-2">
+                                                        <Star className="w-3 h-3" /> Review Now
+                                                    </button>
+                                                )}
+
+                                                {((b.status || '').toLowerCase() === 'pending' || (b.status || '').toLowerCase() === 'confirmed') && (
+                                                    <button onClick={() => handleDeleteBooking(b.id)} className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
-                                    </div>
-                                    <div className="flex items-center gap-3 sm:gap-4 mt-4 sm:mt-6 md:mt-0 w-full md:w-auto justify-end">
-                                        <div className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest text-center ${b.status === 'confirmed' ? 'bg-green-500/10 text-green-400' :
-                                            b.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' :
-                                                'bg-red-500/10 text-red-400'
-                                            }`}>
-                                            {b.status}
-                                        </div>
-                                        {(b.status === 'pending' || b.status === 'confirmed') && (
-                                            <button onClick={() => handleDeleteBooking(b.id)} className="p-3 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500 hover:text-white transition-all">
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            ))}
+
+                                        {/* Expandable Section */}
+                                        <AnimatePresence>
+                                            {isExpanded && review && (
+                                                <motion.div
+                                                    initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="mt-8 pt-8 border-t border-stone-100 space-y-6">
+                                                        <div className="bg-stone-50 rounded-[32px] p-6 sm:p-8 space-y-6">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex gap-1">
+                                                                    {[...Array(5)].map((_, i) => (
+                                                                        <Star key={i} className={`w-4 h-4 ${i < review.rating ? "fill-amber-400 text-amber-400" : "text-stone-200"}`} />
+                                                                    ))}
+                                                                </div>
+                                                                <span className="text-[10px] text-stone-300 font-bold uppercase tracking-widest">Sent on {new Date(review.created_at).toLocaleDateString()}</span>
+                                                            </div>
+                                                            <p className="text-stone-600 font-medium italic text-lg leading-relaxed">"{review.comment}"</p>
+
+                                                            {review.guide_reply && (
+                                                                <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-emerald-600 p-6 sm:p-8 rounded-[32px] text-white shadow-lg relative ml-8">
+                                                                    <div className="absolute -top-2 left-10 w-4 h-4 bg-emerald-600 rotate-45"></div>
+                                                                    <div className="flex items-center gap-3 mb-2">
+                                                                        <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center font-black text-[10px]">G</div>
+                                                                        <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Guide's Response</span>
+                                                                    </div>
+                                                                    <p className="text-sm sm:text-lg font-medium italic opacity-95 leading-relaxed">"{review.guide_reply}"</p>
+                                                                </motion.div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                );
+                            })}
                         </motion.div>
                     )}
                 </div>
+
+                {/* Support History Section */}
+                {supportMessages.length > 0 && (
+                    <div className="mt-20 space-y-8">
+                        <h2 className="text-3xl font-black text-stone-900 flex items-center gap-4 px-2 font-display uppercase tracking-tight">
+                            <Mail className="w-8 h-8 text-emerald-600" /> Admin Responses
+                        </h2>
+
+                        <div className="grid gap-6">
+                            {supportMessages.map((msg) => (
+                                <div key={msg.id} className="glass-panel p-8 rounded-[40px] border-stone-100 bg-white/80 shadow-sm">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center border border-stone-100">
+                                                <MessageSquare className="w-5 h-5 text-stone-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em]">Sent on {new Date(msg.created_at).toLocaleDateString()}</p>
+                                                <p className="text-stone-700 font-bold mt-1">{msg.message}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {msg.reply && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                                            className="mt-6 pt-6 border-t border-stone-50 flex gap-6"
+                                        >
+                                            <div className="w-12 h-12 shrink-0 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-emerald-500">
+                                                <Shield className="w-6 h-6 text-white" />
+                                            </div>
+                                            <div className="bg-emerald-50/50 p-6 rounded-[32px] border border-emerald-100 relative flex-1">
+                                                <div className="absolute -top-2 left-6 w-4 h-4 bg-emerald-50/50 rotate-45 border-l border-t border-emerald-100"></div>
+                                                <div className="text-[9px] font-black uppercase tracking-widest text-emerald-600 mb-2">Platform Admin Jawab</div>
+                                                <p className="text-stone-800 font-medium italic text-base leading-relaxed">"{msg.reply}"</p>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
+
+            {/* Review Modal */}
+            <AnimatePresence>
+                {reviewingBooking && (
+                    <ReviewForm
+                        booking={reviewingBooking}
+                        onClose={() => setReviewingBooking(null)}
+                        onSubmitted={(newRev) => setMyReviews(prev => [...prev, newRev])}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 };

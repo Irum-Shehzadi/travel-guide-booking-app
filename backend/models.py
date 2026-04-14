@@ -147,6 +147,9 @@ class ReviewCreate(BaseModel):
     comment: str
     booking_id: Optional[str] = None
 
+class ReviewReply(BaseModel):
+    reply: str
+
 class ReviewInDB(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
     
@@ -156,6 +159,8 @@ class ReviewInDB(BaseModel):
     traveler_name: str
     rating: int
     comment: str
+    guide_reply: Optional[str] = None
+    replied_at: Optional[datetime] = None
     booking_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -212,6 +217,7 @@ class NotificationType(str, Enum):
     BOOKING_COMPLETED = "booking_completed"
     REVIEW_RECEIVED = "review_received"
     GUIDE_VERIFIED = "guide_verified"
+    SUPPORT_MESSAGE = "support_message"
     SYSTEM = "system"
 
 class NotificationCreate(BaseModel):
@@ -222,6 +228,16 @@ class NotificationCreate(BaseModel):
     message: str
     link: Optional[str] = None
     metadata: Optional[dict] = None
+
+# Chat Models
+class ChatMessage(BaseModel):
+    sender_email: str
+    receiver_email: str
+    message: str
+    sender_name: str
+    sender_role: str # "traveler", "guide", "admin"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    is_read: bool = False
 
 class NotificationInDB(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
     User, Calendar, MapPin, Clock, CheckCircle, XCircle, Loader2,
-    AlertCircle, Mail, Phone, Briefcase, Zap, Shield, ChevronRight
+    AlertCircle, Mail, Phone, Briefcase, Zap, Shield, ChevronRight, Star, MessageSquare, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 const API_BASE_URL = "http://localhost:8000";
@@ -20,27 +20,39 @@ const itemVariants = {
 };
 
 const GuideDashboard = () => {
-    const { user, isAuthenticated, loading: authLoading } = useAuth();
+    const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
     const navigate = useNavigate();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [pageError, setPageError] = useState(null);
     const [actionLoading, setActionLoading] = useState(null);
-    const [imgError, setImgError] = useState(false);
+    const [reviews, setReviews] = useState([]);
+    const [supportMessages, setSupportMessages] = useState([]);
+    const [expandedReview, setExpandedReview] = useState(null);
+    const [replyText, setReplyText] = useState({});
 
     useEffect(() => {
-        if (!authLoading && !isAuthenticated) { navigate('/traveler-signin'); return; }
+        if (!authLoading && !isAuthenticated) { navigate('/guide-login'); return; }
         if (!authLoading && user && user.type !== 'guide') { navigate('/traveler-dashboard'); return; }
-        if (user?.email) fetchBookings();
+        if (user?.email) {
+            fetchData();
+        }
     }, [user, isAuthenticated, authLoading, navigate]);
 
-    const fetchBookings = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/api/booking/guide-email/${user.email}`);
-            const data = await response.json();
-            setBookings(data.bookings || []);
-        } catch (err) { setPageError('Unable to load bookings'); } finally { setLoading(false); }
+            const [bRes, rRes, sRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/booking/guide-email/${user.email}`),
+                fetch(`${API_BASE_URL}/api/review/guide-email/${user.email}`),
+                fetch(`${API_BASE_URL}/api/contact/user/${user.email}`)
+            ]);
+            const bData = await bRes.json();
+            const rData = await rRes.json();
+            const sData = await sRes.json();
+            setBookings(bData.bookings || []);
+            setReviews(rData.reviews || []);
+            setSupportMessages(sData.messages || []);
+        } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
     const handleStatusUpdate = async (bookingId, newStatus) => {
@@ -55,117 +67,243 @@ const GuideDashboard = () => {
         } catch (err) { alert('Update failed'); } finally { setActionLoading(null); }
     };
 
-    if (authLoading) return <div className="min-h-screen bg-aurora flex items-center justify-center"><Loader2 className="w-10 h-10 text-azure animate-spin" /></div>;
+    const handleReplySubmit = async (reviewId) => {
+        const reply = replyText[reviewId];
+        if (!reply?.trim()) return;
+
+        try {
+            setActionLoading(`reply-${reviewId}`);
+            const response = await fetch(`${API_BASE_URL}/api/review/${reviewId}/reply`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reply }),
+            });
+
+            if (response.ok) {
+                setReviews(reviews.map(r => r.id === reviewId ? { ...r, guide_reply: reply } : r));
+                setReplyText(prev => ({ ...prev, [reviewId]: '' }));
+                alert('Reply saved!');
+            }
+        } catch (err) { alert('Reply failed'); } finally { setActionLoading(null); }
+    };
+
+    if (authLoading) return <div className="min-h-screen bg-aurora flex items-center justify-center"><Loader2 className="w-10 h-10 text-emerald-600 animate-spin" /></div>;
 
     return (
-        <div className="min-h-screen bg-aurora pt-20 sm:pt-24 pb-16 sm:pb-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="min-h-screen bg-aurora pt-24 pb-20">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6">
                 {/* Profile Header */}
                 <motion.div
-                    initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-                    className="glass-panel p-6 sm:p-8 md:p-12 rounded-3xl md:rounded-[40px] border-azure/20 mb-6 sm:mb-10 relative overflow-hidden"
+                    initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+                    className="glass-panel p-8 rounded-[40px] border-emerald-500/20 mb-10 bg-white/60 shadow-xl"
                 >
-                    <div className="absolute top-0 right-0 p-10 opacity-5">
-                        <Shield className="w-40 h-40 text-azure" />
-                    </div>
-                    <div className="flex flex-col md:flex-row items-center gap-6 sm:gap-8 relative z-10">
-                        <div className="w-20 h-20 md:w-24 md:h-24 shrink-0 rounded-3xl bg-gradient-to-tr from-azure to-aurora flex items-center justify-center text-2xl md:text-3xl font-bold text-white shadow-lg overflow-hidden border-2 border-azure/20">
-                            {user?.profile_photo && !imgError ? (
-                                <img
-                                    src={`${API_BASE_URL}${user.profile_photo}`}
-                                    alt={user.name}
-                                    className="w-full h-full object-cover"
-                                    onError={() => setImgError(true)}
-                                />
-                            ) : (
-                                user?.name?.charAt(0) || 'G'
-                            )}
+                    <div className="flex flex-col md:flex-row items-center gap-8">
+                        <div className="w-20 h-20 rounded-3xl bg-emerald-600 flex items-center justify-center text-3xl font-black text-white shadow-lg">
+                            {user?.name?.charAt(0)}
                         </div>
-                        <div className="text-center md:text-left">
-                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white mb-2 underline decoration-azure decoration-4 underline-offset-8">Guide Command Center</h1>
-                            <p className="text-gray-500 font-medium flex items-center justify-center md:justify-start gap-2 break-all">
-                                <Mail className="w-4 h-4 text-azure shrink-0" /> {user?.email}
+                        <div className="text-center md:text-left flex-1">
+                            <h1 className="text-3xl font-black text-stone-900 mb-1">Guide Dashboard</h1>
+                            <p className="text-stone-500 font-bold flex items-center justify-center md:justify-start gap-2">
+                                <Mail className="w-4 h-4 text-emerald-600" /> {user?.email}
                             </p>
                         </div>
+                        <button onClick={logout} className="px-6 py-3 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
+                            Log Out
+                        </button>
                     </div>
                 </motion.div>
 
                 {/* Stats */}
-                <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 uppercase tracking-widest font-black">
                     {[
-                        { label: 'Total Jobs', val: bookings.length, icon: Briefcase, color: 'text-azure' },
-                        { label: 'Active', val: bookings.filter(b => b.status === 'confirmed').length, icon: CheckCircle, color: 'text-green-400' },
-                        { label: 'New Requests', val: bookings.filter(b => b.status === 'pending').length, icon: Clock, color: 'text-yellow-400' },
-                        { label: 'Completed', val: bookings.filter(b => b.status === 'completed').length, icon: Shield, color: 'text-blue-400' }
+                        { label: 'Pending', val: bookings.filter(b => b.status === 'pending').length, color: 'text-amber-500' },
+                        { label: 'Confirmed', val: bookings.filter(b => b.status === 'confirmed').length, color: 'text-emerald-500' },
+                        { label: 'Completed', val: bookings.filter(b => b.status === 'completed').length, color: 'text-cyan-600' },
+                        { label: 'Total Jobs', val: bookings.length, color: 'text-stone-400' }
                     ].map((s, i) => (
-                        <motion.div key={i} variants={itemVariants} className="glass-card p-6 rounded-3xl border-white/5">
-                            <s.icon className={`w-6 h-6 ${s.color} mb-4`} />
-                            <div className="text-3xl font-bold text-white mb-1">{s.val}</div>
-                            <div className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{s.label}</div>
-                        </motion.div>
+                        <div key={i} className="glass-card p-6 rounded-3xl text-center shadow-sm">
+                            <div className={`text-2xl mb-1 ${s.color}`}>{s.val}</div>
+                            <div className="text-[9px] text-stone-500">{s.label}</div>
+                        </div>
                     ))}
-                </motion.div>
+                </div>
 
-                {/* Requests List */}
+                {/* Assignment Queue */}
                 <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                        <Zap className="w-6 h-6 text-azure" /> Assignment Queue
+                    <h2 className="text-3xl font-black text-stone-900 flex items-center gap-4 px-2 tracking-tight">
+                        <Zap className="w-8 h-8 text-emerald-600" /> Assignment Queue
                     </h2>
 
                     {loading ? (
-                        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-azure animate-spin" /></div>
+                        <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 text-emerald-600 animate-spin" /></div>
                     ) : bookings.length === 0 ? (
-                        <div className="glass-panel p-10 sm:p-20 rounded-3xl md:rounded-[40px] text-center">
-                            <Calendar className="w-16 h-16 text-white/5 mx-auto mb-6" />
-                            <p className="text-xl text-gray-500 font-bold">No active requests found.</p>
+                        <div className="glass-panel p-20 rounded-[40px] text-center border-stone-200 bg-white/40">
+                            <MapPin className="w-16 h-16 text-stone-200 mx-auto mb-4" />
+                            <p className="text-xl text-stone-400 font-bold">No assignments yet.</p>
                         </div>
                     ) : (
-                        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid gap-4">
-                            {bookings.map((b) => (
-                                <motion.div key={b.id} variants={itemVariants} className="glass-panel p-5 sm:p-6 rounded-2xl md:rounded-3xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-white/5 hover:border-azure/20 transition-all group">
-                                    <div className="flex items-start sm:items-center gap-4 sm:gap-6 w-full">
-                                        <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-2xl bg-white/5 flex items-center justify-center font-bold text-azure border border-azure/20">
-                                            <User className="w-4 h-4 sm:w-5 sm:h-5" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                                                <h3 className="text-base sm:text-lg font-bold text-white truncate max-w-[150px] sm:max-w-xs">{b.traveler_name}</h3>
-                                                <span className={`px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${b.status === 'confirmed' ? 'bg-green-500/10 text-green-400' :
-                                                    b.status === 'pending' ? 'bg-yellow-500/10 text-yellow-400' :
-                                                        'bg-blue-500/10 text-blue-400'
-                                                    }`}>
-                                                    {b.status}
-                                                </span>
+                        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid gap-6">
+                            {bookings.map((b) => {
+                                const review = reviews.find(r => r.booking_id === b.id);
+                                const isExpanded = expandedReview === b.id;
+
+                                return (
+                                    <motion.div key={b.id} variants={itemVariants} className="glass-panel p-6 sm:p-8 rounded-[40px] border-stone-100 bg-white/80 shadow-sm hover:shadow-xl transition-all">
+                                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-14 h-14 shrink-0 rounded-2xl bg-emerald-50 flex items-center justify-center font-black text-emerald-600 text-xl">
+                                                    {b.traveler_name?.charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <div className="flex items-center gap-3 mb-1">
+                                                        <h3 className="text-xl font-black text-stone-900">{b.traveler_name}</h3>
+                                                        <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
+                                                            b.status === 'confirmed' ? 'bg-emerald-100 text-emerald-700' :
+                                                            b.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-stone-100 text-stone-500'
+                                                        }`}>
+                                                            {b.status}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex flex-wrap gap-x-6 text-[10px] text-stone-400 font-bold uppercase tracking-widest">
+                                                        <span className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5 text-emerald-500" /> {b.destination}</span>
+                                                        <span className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5 text-cyan-500" /> {new Date(b.booking_date).toDateString()}</span>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-500 font-medium">
-                                                <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-azure shrink-0" /><span className="truncate">{b.destination}</span></span>
-                                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3 text-azure shrink-0" />{new Date(b.booking_date).toDateString()}</span>
-                                                <span className="flex items-center gap-1"><Clock className="w-3 h-3 text-azure shrink-0" />{b.duration_days} Days</span>
-                                                <span className="flex items-center gap-1"><Phone className="w-3 h-3 text-azure shrink-0" />{b.contact_phone}</span>
+
+                                            <div className="flex items-center gap-3 self-end lg:self-center">
+                                                {review && (
+                                                    <button 
+                                                        onClick={() => setExpandedReview(isExpanded ? null : b.id)}
+                                                        className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all ${
+                                                            isExpanded ? 'bg-stone-900 text-white' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                                        }`}
+                                                    >
+                                                        <Star className={`w-3.5 h-3.5 ${isExpanded ? 'fill-white' : 'fill-emerald-700'}`} />
+                                                        {isExpanded ? 'Hide Review' : 'View Review'}
+                                                    </button>
+                                                )}
+
+                                                <div className="flex items-center gap-2">
+                                                    {actionLoading === b.id ? <Loader2 className="w-5 h-5 text-emerald-600 animate-spin" /> : (
+                                                        <>
+                                                            {b.status === 'pending' && (
+                                                                <>
+                                                                    <button onClick={() => handleStatusUpdate(b.id, 'confirmed')} className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all">Accept</button>
+                                                                    <button onClick={() => handleStatusUpdate(b.id, 'cancelled')} className="px-5 py-2.5 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-100 transition-all">Decline</button>
+                                                                </>
+                                                            )}
+                                                            {b.status === 'confirmed' && (
+                                                                <button onClick={() => handleStatusUpdate(b.id, 'completed')} className="px-8 py-2.5 bg-white border-2 border-emerald-600 text-emerald-700 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all">Mark as Completed</button>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Expandable Review Section */}
+                                        <AnimatePresence>
+                                            {isExpanded && review && (
+                                                <motion.div 
+                                                    initial={{ height: 0, opacity: 0 }} 
+                                                    animate={{ height: 'auto', opacity: 1 }} 
+                                                    exit={{ height: 0, opacity: 0 }}
+                                                    className="overflow-hidden"
+                                                >
+                                                    <div className="mt-8 pt-8 border-t border-stone-100">
+                                                        <div className="bg-stone-50 rounded-[32px] p-6 sm:p-8 space-y-6">
+                                                            <div className="flex items-center justify-between">
+                                                                <div className="flex gap-1">
+                                                                    {[...Array(5)].map((_, i) => (
+                                                                        <Star key={i} className={`w-4 h-4 ${i < review.rating ? "fill-amber-400 text-amber-400" : "text-stone-200"}`} />
+                                                                    ))}
+                                                                </div>
+                                                                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest">Feedback on {new Date(review.created_at).toLocaleDateString()}</span>
+                                                            </div>
+                                                            <p className="text-stone-600 font-medium italic text-lg leading-relaxed">"{review.comment}"</p>
+                                                            
+                                                            {review.guide_reply ? (
+                                                                <div className="bg-emerald-600 p-6 sm:p-8 rounded-[32px] text-white shadow-lg relative ml-8">
+                                                                    <div className="absolute -top-2 left-10 w-4 h-4 bg-emerald-600 rotate-45"></div>
+                                                                    <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-3 opacity-70">Your Professional Response</p>
+                                                                    <p className="text-sm sm:text-lg font-medium italic leading-relaxed">"{review.guide_reply}"</p>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="space-y-4 pt-4 border-t border-stone-200">
+                                                                    <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-2">Send a Professional Answer</p>
+                                                                    <div className="flex flex-col sm:flex-row gap-3">
+                                                                        <textarea
+                                                                            placeholder="Type your thank you note or clarification here..."
+                                                                            className="flex-1 bg-white border border-stone-200 rounded-3xl p-5 text-sm font-medium focus:border-emerald-500 outline-none transition-all resize-none shadow-sm"
+                                                                            rows="2"
+                                                                            value={replyText[review.id] || ''}
+                                                                            onChange={(e) => setReplyText({ ...replyText, [review.id]: e.target.value })}
+                                                                        ></textarea>
+                                                                        <button
+                                                                            onClick={() => handleReplySubmit(review.id)}
+                                                                            disabled={actionLoading === `reply-${review.id}`}
+                                                                            className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-3xl text-sm font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-100 disabled:opacity-50"
+                                                                        >
+                                                                            {actionLoading === `reply-${review.id}` ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Send Answer'}
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </motion.div>
+                                );
+                            })}
+                        </motion.div>
+                    )}
+                </div>
+
+                {/* Support History Section */}
+                {supportMessages.length > 0 && (
+                    <div className="mt-20 space-y-8">
+                        <h2 className="text-3xl font-black text-stone-900 flex items-center gap-4 px-2 tracking-tight">
+                            <Mail className="w-8 h-8 text-emerald-600" /> Admin Help Center
+                        </h2>
+                        
+                        <div className="grid gap-6">
+                            {supportMessages.map((msg) => (
+                                <div key={msg.id} className="glass-panel p-8 rounded-[40px] border-stone-100 bg-white/80 shadow-sm">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-stone-50 flex items-center justify-center border border-stone-100">
+                                                <MessageSquare className="w-5 h-5 text-stone-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-stone-300 uppercase tracking-[0.2em]">Sent on {new Date(msg.created_at).toLocaleDateString()}</p>
+                                                <p className="text-stone-700 font-bold mt-1">{msg.message}</p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3 mt-4 sm:mt-6 lg:mt-0 w-full lg:w-auto justify-end">
-                                        {actionLoading === b.id ? <Loader2 className="w-5 h-5 text-azure animate-spin" /> : (
-                                            <>
-                                                {b.status === 'pending' && (
-                                                    <>
-                                                        <button onClick={() => handleStatusUpdate(b.id, 'confirmed')} className="px-5 py-2 bg-azure hover:bg-azure/80 text-white rounded-xl text-xs font-bold transition-all">Confirm</button>
-                                                        <button onClick={() => handleStatusUpdate(b.id, 'cancelled')} className="px-5 py-2 bg-white/5 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold transition-all border border-red-500/20">Decline</button>
-                                                    </>
-                                                )}
-                                                {b.status === 'confirmed' && (
-                                                    <button onClick={() => handleStatusUpdate(b.id, 'completed')} className="px-5 py-2 bg-green-500 text-white rounded-xl text-xs font-bold transition-all shadow-[0_0_15px_rgba(34,197,94,0.3)]">Mark Completed</button>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
-                                </motion.div>
+                                    {msg.reply && (
+                                        <motion.div 
+                                            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                                            className="mt-6 pt-6 border-t border-stone-50 flex gap-6"
+                                        >
+                                            <div className="w-12 h-12 shrink-0 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-emerald-500">
+                                                <Shield className="w-6 h-6 text-white" />
+                                            </div>
+                                            <div className="bg-emerald-50/50 p-6 rounded-[32px] border border-emerald-100 relative flex-1">
+                                                <div className="absolute -top-2 left-6 w-4 h-4 bg-emerald-50/50 rotate-45 border-l border-t border-emerald-100"></div>
+                                                <div className="text-[9px] font-black uppercase tracking-widest text-emerald-600 mb-2">Platform Admin Response</div>
+                                                <p className="text-stone-800 font-medium italic text-base leading-relaxed">"{msg.reply}"</p>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </div>
                             ))}
-                        </motion.div>
-                    )}
-                </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

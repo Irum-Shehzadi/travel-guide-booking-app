@@ -16,7 +16,7 @@ import GuideDashboard from "./Components/Pages/Guide/GuideDashboard";
 import GuideLogin from "./Components/Pages/Guide/GuideLogin";
 import AdminMessages from "./Components/Pages/Admin/AdminMessages";
 import GuideProfile from "./Components/Pages/Guide/GuideProfile";
-
+import GuideDetail from "./Components/Pages/Guide/GuideDetail";
 
 // Admin imports
 import AdminLogin from "./Components/Pages/Admin/AdminLogin";
@@ -52,6 +52,9 @@ function App() {
 
         {/* Admin */}
         <Route path="/admin/messages" element={<ProtectedRoute><AdminMessages /></ProtectedRoute>} />
+
+        {/* Guide Detail - Viewable by anyone/travelers */}
+        <Route path="/guide/:id" element={<GuideDetail />} />
 
         {/* Guide Booking - Only for travelers */}
         <Route path="/guide-booking" element={<ProtectedRoute allowedRoles={['traveler']}><GuideBooking /></ProtectedRoute>} />

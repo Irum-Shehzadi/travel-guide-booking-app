@@ -42,40 +42,28 @@ const AdminLogin = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center py-12 px-4"
-            style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)" }}>
+        <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-aurora relative overflow-hidden">
 
             {/* Background decorative elements */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-20 left-20 w-72 h-72 rounded-full opacity-20"
-                    style={{ background: "radial-gradient(circle, rgba(139,92,246,0.4), transparent 70%)" }} />
-                <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full opacity-15"
-                    style={{ background: "radial-gradient(circle, rgba(59,130,246,0.4), transparent 70%)" }} />
-            </div>
+            <div className="aurora-glow top-0 left-0" />
+            <div className="aurora-glow bottom-0 right-0" style={{ backgroundColor: 'var(--lake-blue)' }} />
 
             <div className="relative w-full max-w-md">
                 {/* Logo/Icon */}
                 <div className="text-center mb-8">
-                    <div className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-4"
-                        style={{ background: "linear-gradient(135deg, #8b5cf6, #6366f1)" }}>
+                    <div className="w-20 h-20 mx-auto rounded-2xl flex items-center justify-center mb-4 bg-gradient-to-r from-[#0284C7] to-[#10B981] shadow-lg">
                         <Shield className="w-10 h-10 text-white" />
                     </div>
-                    <h1 className="text-3xl font-extrabold text-white">Admin Panel</h1>
-                    <p className="text-gray-400 mt-2">Login to manage your platform</p>
+                    <h1 className="text-3xl font-extrabold text-gradient">Admin Panel</h1>
+                    <p className="text-gray-500 mt-2">Login to manage your platform</p>
                 </div>
 
                 {/* Login Form */}
-                <form onSubmit={handleSubmit} className="rounded-2xl p-8 space-y-6"
-                    style={{
-                        background: "rgba(255,255,255,0.05)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        backdropFilter: "blur(20px)"
-                    }}>
+                <form onSubmit={handleSubmit} className="glass-card rounded-2xl p-8 space-y-6">
 
                     {/* Error */}
                     {error && (
-                        <div className="flex items-center gap-3 p-4 rounded-xl text-red-300"
-                            style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                        <div className="flex items-center gap-3 p-4 rounded-xl text-red-600 bg-red-50 border border-red-200">
                             <AlertCircle className="w-5 h-5 shrink-0" />
                             <span className="text-sm">{error}</span>
                         </div>
@@ -83,7 +71,7 @@ const AdminLogin = () => {
 
                     {/* Email */}
                     <div>
-                        <label className="text-sm font-medium text-gray-300 mb-2 block">Email</label>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Email</label>
                         <div className="relative">
                             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                             <input
@@ -92,15 +80,14 @@ const AdminLogin = () => {
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="admin@travelguide.com"
                                 required
-                                className="w-full pl-12 pr-4 py-3.5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-                                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                                className="w-full pl-12 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0284C7] transition"
                             />
                         </div>
                     </div>
 
                     {/* Password */}
                     <div>
-                        <label className="text-sm font-medium text-gray-300 mb-2 block">Password</label>
+                        <label className="text-sm font-medium text-gray-700 mb-2 block">Password</label>
                         <div className="relative">
                             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                             <input
@@ -109,8 +96,7 @@ const AdminLogin = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Enter admin password"
                                 required
-                                className="w-full pl-12 pr-12 py-3.5 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-                                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                                className="w-full pl-12 pr-12 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-black placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0284C7] transition"
                             />
                             <button
                                 type="button"
@@ -126,11 +112,7 @@ const AdminLogin = () => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3.5 rounded-xl text-white font-semibold text-lg transition-all disabled:opacity-50 cursor-pointer hover:shadow-xl"
-                        style={{
-                            background: "linear-gradient(135deg, #8b5cf6, #6366f1)",
-                            boxShadow: "0 4px 20px rgba(139, 92, 246, 0.3)"
-                        }}
+                        className="w-full btn-premium py-3.5 rounded-xl transition-all disabled:opacity-50"
                     >
                         {loading ? (
                             <span className="flex items-center justify-center gap-2">

@@ -28,12 +28,12 @@ function LocationMarker({ position, label, delay = 0 }) {
                 <sphereGeometry args={[0.03, 16, 16]} />
                 <meshBasicMaterial color="#ffffff" />
             </mesh>
-            <Html distanceFactor={5} position={[0, 0.12, 0]}>
+            <Html distanceFactor={8} position={[0, 0.12, 0]}>
                 <div style={{
-                    color: "#e0f2fe",
-                    fontSize: "10px",
-                    fontWeight: "600",
-                    textShadow: "0 0 8px rgba(96, 165, 250, 0.8)",
+                    color: "#ffffff",
+                    fontSize: "9px",
+                    fontWeight: "700",
+                    textShadow: "0 0 10px rgba(16, 185, 129, 0.7)",
                     whiteSpace: "nowrap",
                     pointerEvents: "none",
                     fontFamily: "'Inter', sans-serif"
@@ -80,7 +80,7 @@ function ParticleField({ count = 200 }) {
             </bufferGeometry>
             <pointsMaterial
                 size={0.015}
-                color="#60a5fa"
+                color="#10B981"
                 transparent
                 opacity={0.6}
                 sizeAttenuation
@@ -108,7 +108,7 @@ function GlobeMesh() {
         varying vec3 vNormal;
         void main() {
           float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
-          gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity;
+          gl_FragColor = vec4(0.06, 0.72, 0.51, 1.0) * intensity; // Valley Green Aurora
         }
       `,
             blending: THREE.AdditiveBlending,
@@ -131,12 +131,10 @@ function GlobeMesh() {
     });
 
     const locations = [
-        { lat: 33.6844, lng: 73.0479, label: "Islamabad" },
-        { lat: 35.8819, lng: 74.4643, label: "Hunza" },
-        { lat: 35.3206, lng: 75.5551, label: "Skardu" },
-        { lat: 34.0151, lng: 71.5249, label: "Peshawar" },
-        { lat: 25.3960, lng: 68.3578, label: "Mohenjo Daro" },
-        { lat: 30.3753, lng: 69.3451, label: "Quetta" },
+        { lat: 36.3, lng: 74.6, label: "North" },
+        { lat: 24.8, lng: 67.0, label: "South" },
+        { lat: 31.5, lng: 74.3, label: "East" },
+        { lat: 25.1, lng: 62.3, label: "West" },
     ];
 
     const latLngToVector3 = (lat, lng, radius = 1.52) => {
@@ -151,27 +149,38 @@ function GlobeMesh() {
 
     return (
         <group>
+
+
             <Sphere ref={globeRef} args={[1.5, 64, 64]}>
                 <meshPhongMaterial
-                    color="#1e3a5f"
+                    color="#021a30"
+                    emissive="#0284C7"
+                    emissiveIntensity={0.2}
                     transparent
-                    opacity={0.85}
-                    shininess={50}
+                    opacity={0.9}
+                    shininess={100}
                 />
             </Sphere>
 
-            <Sphere ref={wireframeRef} args={[1.52, 32, 32]}>
+            <Sphere ref={atmosphereRef} args={[1.55, 64, 64]}>
+                <meshPhongMaterial
+                    color="#10B981"
+                    transparent
+                    opacity={0.05}
+                    side={THREE.BackSide}
+                />
+            </Sphere>
+
+            <Sphere ref={wireframeRef} args={[1.52, 64, 64]}>
                 <meshBasicMaterial
-                    color="#3b82f6"
+                    color="#10B981"
                     wireframe
                     transparent
                     opacity={0.15}
                 />
             </Sphere>
 
-            <mesh ref={atmosphereRef} material={atmosphereMaterial}>
-                <sphereGeometry args={[1.8, 64, 64]} />
-            </mesh>
+
 
             {locations.map((loc, i) => (
                 <LocationMarker
@@ -193,10 +202,10 @@ const Globe3D = () => {
                 style={{ background: "transparent" }}
                 gl={{ alpha: true, antialias: true }}
             >
-                <ambientLight intensity={0.3} />
-                <directionalLight position={[5, 3, 5]} intensity={1} color="#ffffff" />
-                <directionalLight position={[-5, -3, -5]} intensity={0.3} color="#3b82f6" />
-                <pointLight position={[0, 0, 5]} intensity={0.5} color="#60a5fa" />
+                <ambientLight intensity={0.4} />
+                <directionalLight position={[10, 10, 5]} intensity={1.5} color="#ffffff" />
+                <directionalLight position={[-10, -10, -5]} intensity={0.5} color="#10B981" />
+                <pointLight position={[0, 0, 5]} intensity={0.8} color="#0284C7" />
 
                 <GlobeMesh />
                 <ParticleField count={300} />

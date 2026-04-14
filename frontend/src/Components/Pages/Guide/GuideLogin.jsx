@@ -54,9 +54,9 @@ const GuideLogin = () => {
     };
 
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex bg-aurora">
             {/* Left Side - Image & Branding */}
-            <div className="hidden lg:flex lg:w-1/2 relative bg-linear-to-br from-orange-600 via-amber-600 to-yellow-500 overflow-hidden">
+            <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#0284C7] to-[#10B981] overflow-hidden">
                 <div className="absolute inset-0">
                     <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse" />
                     <div className="absolute bottom-20 right-20 w-96 h-96 bg-yellow-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
@@ -72,7 +72,7 @@ const GuideLogin = () => {
                         </div>
                         <h1 className="text-5xl font-bold mb-6 leading-tight">
                             Share Your<br />
-                            <span className="text-transparent bg-clip-text bg-linear-to-r from-yellow-200 to-amber-100">
+                            <span className="text-white font-extrabold">
                                 Passion & Expertise
                             </span>
                         </h1>
@@ -84,17 +84,17 @@ const GuideLogin = () => {
             </div>
 
             {/* Right Side - Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-linear-to-br from-gray-50 to-orange-50">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
                 <div className="w-full max-w-md">
                     {/* Mobile Logo */}
                     <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-                        <div className="bg-linear-to-r from-orange-600 to-amber-600 p-3 rounded-xl">
+                        <div className="bg-gradient-to-r from-[#0284C7] to-[#10B981] p-3 rounded-xl">
                             <Shield className="w-6 h-6 text-white" />
                         </div>
-                        <span className="text-xl font-bold text-gray-800">Guide Portal</span>
+                        <span className="text-xl font-bold text-gradient">Guide Portal</span>
                     </div>
 
-                    <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+                    <div className="glass-card rounded-3xl p-8 border border-gray-100">
                         <div className="text-center mb-8">
                             <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome Guide</h2>
                             <p className="text-gray-500">Sign in to manage your tours</p>
@@ -108,7 +108,7 @@ const GuideLogin = () => {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className={`relative transition-all duration-300 ${focused === 'email' ? 'transform scale-[1.02]' : ''}`}>
-                                <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focused === 'email' ? 'text-orange-600' : 'text-gray-400'}`}>
+                                <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focused === 'email' ? 'text-[#0284C7]' : 'text-gray-400'}`}>
                                     <Mail className="w-5 h-5" />
                                 </div>
                                 <input
@@ -118,13 +118,13 @@ const GuideLogin = () => {
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     onFocus={() => setFocused('email')}
                                     onBlur={() => setFocused('')}
-                                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
+                                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-[#10B981] focus:bg-white focus:outline-none transition-all duration-300 text-black"
                                     required
                                 />
                             </div>
 
                             <div className={`relative transition-all duration-300 ${focused === 'password' ? 'transform scale-[1.02]' : ''}`}>
-                                <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focused === 'password' ? 'text-orange-600' : 'text-gray-400'}`}>
+                                <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300 ${focused === 'password' ? 'text-[#0284C7]' : 'text-gray-400'}`}>
                                     <Lock className="w-5 h-5" />
                                 </div>
                                 <input
@@ -134,7 +134,7 @@ const GuideLogin = () => {
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     onFocus={() => setFocused('password')}
                                     onBlur={() => setFocused('')}
-                                    className="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-orange-500 focus:bg-white focus:outline-none transition-all duration-300 text-black"
+                                    className="w-full pl-12 pr-12 py-4 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-[#10B981] focus:bg-white focus:outline-none transition-all duration-300 text-black"
                                     required
                                 />
                                 <button
@@ -149,7 +149,7 @@ const GuideLogin = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-linear-to-r from-orange-600 to-amber-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-500/30 transform hover:scale-[1.02] transition-all duration-300 group disabled:opacity-50"
+                                className="w-full btn-premium py-4 rounded-xl flex items-center justify-center gap-2 group disabled:opacity-50"
                             >
                                 {loading ? 'Signing In...' : 'Sign In'}
                                 {!loading && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
@@ -160,7 +160,7 @@ const GuideLogin = () => {
                             Don't have a guide account?{' '}
                             <Link
                                 to="/guide-registration"
-                                className="font-semibold text-orange-600 hover:text-orange-700 transition-all"
+                                className="font-semibold text-[#0284C7] hover:text-[#10B981] transition-all"
                             >
                                 Register here
                             </Link>

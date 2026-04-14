@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
-from models import ReviewCreate, DestinationReviewCreate, NotificationType
+from models import ReviewCreate, DestinationReviewCreate, ReviewReply, NotificationType
 from database import get_database
 from datetime import datetime
 from bson import ObjectId
@@ -41,7 +41,7 @@ async def create_review(review: ReviewCreate):
     
     # Check if user already reviewed this booking
     if review.booking_id:
-        existing_review = await db.reviews.find_one({
+        existing_review = await db.guide_reviews.find_one({
             "booking_id": review.booking_id,
             "traveler_email": review.traveler_email
         })
@@ -65,10 +65,10 @@ async def create_review(review: ReviewCreate):
     }
     
     # Insert into database
-    result = await db.reviews.insert_one(review_doc)
+    result = await db.guide_reviews.insert_one(review_doc)
     
     # Update guide's average rating
-    all_reviews = await db.reviews.find({"guide_id": review.guide_id}).to_list(length=1000)
+    all_reviews = await db.guide_reviews.find({"guide_id": review.guide_id}).to_list(length=1000)
     if all_reviews:
         avg_rating = sum(r["rating"] for r in all_reviews) / len(all_reviews)
         await db.guides.update_one(
@@ -103,7 +103,7 @@ async def get_guide_reviews(guide_id: str):
     """Get all reviews for a specific guide"""
     db = await get_database()
     
-    reviews = await db.reviews.find({"guide_id": guide_id}).sort("created_at", -1).to_list(length=100)
+    reviews = await db.guide_reviews.find({"guide_id": guide_id}).sort("created_at", -1).to_list(length=100)
     
     reviews_list = []
     for review in reviews:
@@ -112,6 +112,8 @@ async def get_guide_reviews(guide_id: str):
             "traveler_name": review["traveler_name"],
             "rating": review["rating"],
             "comment": review["comment"],
+            "guide_reply": review.get("guide_reply"),
+            "replied_at": review.get("replied_at").isoformat() if review.get("replied_at") else None,
             "created_at": review["created_at"].isoformat() if review.get("created_at") else None
         })
     
@@ -131,7 +133,7 @@ async def get_all_reviews():
     """Get all reviews (for the reviews page)"""
     db = await get_database()
     
-    reviews = await db.reviews.find().sort("created_at", -1).to_list(length=100)
+    reviews = await db.guide_reviews.find().sort("created_at", -1).to_list(length=100)
     
     reviews_list = []
     for review in reviews:
@@ -152,7 +154,7 @@ async def get_traveler_reviews(email: str):
     """Get all reviews by a specific traveler"""
     db = await get_database()
     
-    reviews = await db.reviews.find({"traveler_email": email}).sort("created_at", -1).to_list(length=100)
+    reviews = await db.guide_reviews.find({"traveler_email": email}).sort("created_at", -1).to_list(length=100)
     
     reviews_list = []
     for review in reviews:
@@ -162,6 +164,9 @@ async def get_traveler_reviews(email: str):
             "guide_name": review.get("guide_name", "Unknown Guide"),
             "rating": review["rating"],
             "comment": review["comment"],
+            "booking_id": review.get("booking_id"),
+            "guide_reply": review.get("guide_reply"),
+            "replied_at": review.get("replied_at").isoformat() if review.get("replied_at") else None,
             "created_at": review["created_at"].isoformat() if review.get("created_at") else None
         })
     
@@ -184,7 +189,7 @@ async def get_guide_reviews_by_email(email: str):
     guide_id = str(guide["_id"])
     
     # Get all reviews for this guide
-    reviews = await db.reviews.find({"guide_id": guide_id}).sort("created_at", -1).to_list(length=100)
+    reviews = await db.guide_reviews.find({"guide_id": guide_id}).sort("created_at", -1).to_list(length=100)
     
     reviews_list = []
     for review in reviews:
@@ -207,7 +212,7 @@ async def delete_review(review_id: str, email: str):
     db = await get_database()
     
     try:
-        review = await db.reviews.find_one({"_id": ObjectId(review_id)})
+        review = await db.guide_reviews.find_one({"_id": ObjectId(review_id)})
     except:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -226,11 +231,11 @@ async def delete_review(review_id: str, email: str):
             detail="You can only delete your own reviews"
         )
     
-    await db.reviews.delete_one({"_id": ObjectId(review_id)})
+    await db.guide_reviews.delete_one({"_id": ObjectId(review_id)})
     
     # Update guide's average rating
     guide_id = review["guide_id"]
-    all_reviews = await db.reviews.find({"guide_id": guide_id}).to_list(length=1000)
+    all_reviews = await db.guide_reviews.find({"guide_id": guide_id}).to_list(length=1000)
     if all_reviews:
         avg_rating = sum(r["rating"] for r in all_reviews) / len(all_reviews)
         await db.guides.update_one(
@@ -298,3 +303,25 @@ async def get_all_destination_reviews():
         })
     
     return {"reviews": reviews_list, "total": len(reviews_list)}
+@router.put("/{review_id}/reply")
+async def reply_to_review(review_id: str, reply_data: ReviewReply):
+    """Allow a guide to reply to a review"""
+    db = await get_database()
+    
+    try:
+        result = await db.guide_reviews.update_one(
+            {"_id": ObjectId(review_id)},
+            {
+                "$set": {
+                    "guide_reply": reply_data.reply,
+                    "replied_at": datetime.utcnow()
+                }
+            }
+        )
+        
+        if result.modified_count == 0:
+            return {"message": "No changes made or review not found"}
+            
+        return {"message": "Reply saved successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

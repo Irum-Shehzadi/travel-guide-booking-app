@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Users, MapPin, CalendarCheck, Shield, Trash2, CheckCircle, Loader2,
-    UserCheck, BarChart3, Mail, Phone, Search, Zap, Trash, Menu, X, LogOut, ChevronRight, Bell, MessageSquare, Star
+    UserCheck, BarChart3, Mail, Phone, Search, Zap, Trash, Menu, X, LogOut, ChevronRight, Bell, MessageSquare, Star, Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
@@ -20,9 +20,20 @@ const AdminDashboard = () => {
     const [travelers, setTravelers] = useState([]);
     const [guides, setGuides] = useState([]);
     const [bookings, setBookings] = useState([]);
+    const [guideReviews, setGuideReviews] = useState([]);
     const [destinationReviews, setDestinationReviews] = useState([]);
+    const [messages, setMessages] = useState([]);
+    const [conversations, setConversations] = useState([]);
+    const [selectedChat, setSelectedChat] = useState(null);
+    const [chatHistory, setChatHistory] = useState([]);
+    const [chatInput, setChatInput] = useState("");
+    const [chatsLoading, setChatsLoading] = useState(false);
+    const chatSocketRef = useRef(null);
+    const chatEndRef = useRef(null);
     const [loading, setLoading] = useState(true);
     const [selectedGuide, setSelectedGuide] = useState(null);
+    const [selectedMessage, setSelectedMessage] = useState(null);
+    const [replyText, setReplyText] = useState('');
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
@@ -33,8 +44,68 @@ const AdminDashboard = () => {
         if (activeTab === 'travelers') fetchTravelers();
         if (activeTab === 'guides') fetchGuides();
         if (activeTab === 'bookings') fetchBookings();
+        if (activeTab === 'guide_reviews') fetchGuideReviews();
         if (activeTab === 'destination_reviews') fetchDestinationReviews();
     }, [activeTab]);
+
+    useEffect(() => {
+        if (activeTab === 'chats') {
+            fetchConversations();
+            connectChatWS();
+        } else if (chatSocketRef.current) {
+            chatSocketRef.current.close();
+        }
+        return () => { if (chatSocketRef.current) chatSocketRef.current.close(); };
+    }, [activeTab]);
+
+    useEffect(() => {
+        if (chatEndRef.current) {
+            chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [chatHistory]);
+
+    const connectChatWS = () => {
+        const socket = new WebSocket(`ws://localhost:8000/api/chat/ws/admin`);
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (selectedChat && (data.sender_email === selectedChat.email || data.receiver_email === selectedChat.email)) {
+                setChatHistory(prev => [...prev, data]);
+            }
+            fetchConversations(); // Refresh list to show last message
+        };
+        chatSocketRef.current = socket;
+    };
+
+    const fetchConversations = async () => {
+        try {
+            setChatsLoading(true);
+            const res = await fetch(`${API_BASE_URL}/api/chat/conversations`);
+            const data = await res.json();
+            setConversations(data.conversations || []);
+        } catch (err) { console.error(err); } finally { setChatsLoading(false); }
+    };
+
+    const fetchChatHistory = async (userEmail) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/chat/history/${userEmail}?other_email=admin`);
+            const data = await res.json();
+            setChatHistory(data.messages || []);
+        } catch (err) { console.error(err); }
+    };
+
+    const sendChatMessage = (e) => {
+        e.preventDefault();
+        if (!chatInput.trim() || !selectedChat || !chatSocketRef.current) return;
+
+        const payload = {
+            receiver_email: selectedChat.email,
+            message: chatInput,
+            sender_name: "Admin Support",
+            sender_role: "admin"
+        };
+        chatSocketRef.current.send(JSON.stringify(payload));
+        setChatInput("");
+    };
 
     const fetchStats = async () => {
         try {
@@ -68,11 +139,27 @@ const AdminDashboard = () => {
         } catch (err) { console.error(err); }
     };
 
+    const fetchGuideReviews = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/review/all`);
+            const data = await res.json();
+            setGuideReviews(data.reviews || []);
+        } catch (err) { console.error(err); }
+    };
+
     const fetchDestinationReviews = async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/api/review/destination-all/list`);
             const data = await res.json();
             setDestinationReviews(data.reviews || []);
+        } catch (err) { console.error(err); }
+    };
+    
+    const fetchMessages = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/contact/all`);
+            const data = await res.json();
+            setMessages(data.messages || []);
         } catch (err) { console.error(err); }
     };
 
@@ -89,7 +176,26 @@ const AdminDashboard = () => {
         if (type === 'guide') fetchGuides();
         if (type === 'booking') fetchBookings();
         if (type === 'destination_review') fetchDestinationReviews();
+        if (type === 'message') fetchMessages();
         fetchStats();
+    };
+
+    const handleReply = async (e) => {
+        e.preventDefault();
+        if (!replyText.trim() || !selectedMessage) return;
+        
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/contact/${selectedMessage.id}/reply`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reply: replyText })
+            });
+            if (res.ok) {
+                fetchMessages();
+                setSelectedMessage(null);
+                setReplyText('');
+            }
+        } catch (err) { console.error(err); }
     };
 
     const handleLogout = () => {
@@ -102,7 +208,9 @@ const AdminDashboard = () => {
         { id: 'travelers', label: 'Traveler Log', icon: Users },
         { id: 'guides', label: 'Guide Roster', icon: MapPin },
         { id: 'bookings', label: 'Trips & Bookings', icon: CalendarCheck },
-        { id: 'destination_reviews', label: 'Dest. Reviews', icon: MessageSquare },
+        { id: 'destination_reviews', label: 'Dest. Reviews', icon: Star },
+        { id: 'guide_reviews', label: 'Guide Reviews', icon: Star },
+        { id: 'chats', label: 'Chat Hub', icon: MessageSquare },
     ];
 
     if (loading) {
@@ -470,6 +578,158 @@ const AdminDashboard = () => {
                                 </div>
                             )}
 
+                            {/* GUIDE REVIEWS TAB */}
+                            {activeTab === 'guide_reviews' && (
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between mb-8 bg-white p-6 rounded-[32px] border border-stone-200 shadow-sm">
+                                        <h2 className="text-xl font-black text-stone-900 flex items-center gap-3"><Star className="w-5 h-5 text-amber-500 bg-amber-50 p-1 rounded-md" /> Guide Reviews</h2>
+                                        <span className="px-4 py-1.5 bg-amber-50 text-amber-700 rounded-xl text-[10px] font-black uppercase tracking-widest border border-amber-100 shadow-inner">{guideReviews.length} Reviews</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {guideReviews.map(review => (
+                                            <div key={review.id} className="bg-white p-6 sm:p-8 rounded-[32px] border border-stone-200 flex flex-col relative overflow-hidden group hover:border-amber-300 transition-all shadow-sm hover:shadow-xl hover:-translate-y-1">
+                                                <div className="flex items-center justify-between mb-4 relative z-10">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center font-black text-amber-700 text-lg border border-amber-100 shadow-sm">
+                                                            {review.traveler_name?.charAt(0) || 'U'}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-black text-stone-900 text-base">{review.traveler_name}</div>
+                                                            <div className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mt-0.5">{new Date(review.created_at).toLocaleDateString()}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-0.5 bg-stone-50 px-2 py-1 rounded-lg border border-stone-100 shadow-inner">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? "text-amber-400 fill-amber-400" : "text-stone-300"}`} />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-stone-50 p-5 rounded-2xl border border-stone-100 text-sm text-stone-600 font-medium italic mb-4 relative z-10 min-h-[60px]">
+                                                    "{review.comment}"
+                                                </div>
+                                                <div className="mt-auto flex items-center justify-between pt-4 border-t border-stone-100 relative z-10">
+                                                    <div className="flex items-center gap-2">
+                                                        <MapPin className="w-4 h-4 text-cyan-600" />
+                                                        <span className="text-xs font-black uppercase tracking-widest text-stone-800">{review.guide_name || 'Unknown Guide'}</span>
+                                                    </div>
+                                                    <button onClick={() => deleteItem('guide_review', review.id)} className="p-2 text-stone-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all border border-transparent hover:border-red-100 shadow-sm" title="Delete Review">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {guideReviews.length === 0 && (
+                                        <div className="bg-white p-16 rounded-[40px] border border-stone-200 flex flex-col items-center justify-center text-center shadow-sm">
+                                            <div className="w-20 h-20 rounded-full bg-stone-50 flex items-center justify-center mb-6 border border-stone-100">
+                                                <Star className="w-8 h-8 text-stone-300" />
+                                            </div>
+                                            <h3 className="text-xl font-black text-stone-900 mb-2">No Guide Reviews Yet</h3>
+                                            <p className="text-stone-500 max-w-sm font-medium">No reviews have been submitted for guides yet.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* CHAT HUB TAB */}
+                            {activeTab === 'chats' && (
+                                <div className="bg-white rounded-[40px] border border-stone-200 shadow-sm overflow-hidden flex flex-col md:flex-row h-[700px]">
+                                    {/* Sidebar */}
+                                    <div className="w-full md:w-[350px] border-r border-stone-100 flex flex-col bg-stone-50/30">
+                                        <div className="p-8 border-b border-stone-100 bg-white">
+                                            <h2 className="text-xl font-black text-stone-900 flex items-center gap-3">
+                                                <MessageSquare className="w-6 h-6 text-emerald-600" /> Active Chats
+                                            </h2>
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto custom-scrollbar">
+                                            {conversations.length === 0 ? (
+                                                <div className="p-10 text-center opacity-30 italic text-sm">No active discussions</div>
+                                            ) : (
+                                                conversations.map(conv => (
+                                                    <button
+                                                        key={conv.email}
+                                                        onClick={() => { setSelectedChat(conv); fetchChatHistory(conv.email); }}
+                                                        className={`w-full p-6 text-left border-b border-stone-50 transition-all flex items-center gap-4 ${selectedChat?.email === conv.email ? 'bg-white shadow-md border-emerald-100 relative z-10' : 'hover:bg-white/50'}`}
+                                                    >
+                                                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white shadow-sm ${conv.sender_role === 'guide' ? 'bg-cyan-500' : 'bg-emerald-600'}`}>
+                                                            {conv.sender_name?.charAt(0)}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center justify-between mb-1">
+                                                                <span className="font-black text-stone-900 truncate">{conv.sender_name}</span>
+                                                                <span className="text-[8px] font-black uppercase text-stone-400">{new Date(conv.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                            </div>
+                                                            <p className="text-xs text-stone-500 truncate font-medium">{conv.last_message}</p>
+                                                        </div>
+                                                    </button>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Chat Pane */}
+                                    <div className="flex-1 flex flex-col bg-white">
+                                        {selectedChat ? (
+                                            <>
+                                                {/* Pane Header */}
+                                                <div className="p-6 border-b border-stone-100 flex items-center justify-between bg-white shadow-sm relative z-10">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-sm ${selectedChat.sender_role === 'guide' ? 'bg-cyan-500' : 'bg-emerald-600'}`}>
+                                                            {selectedChat.sender_name?.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="font-black text-stone-900 tracking-tight">{selectedChat.sender_name}</h3>
+                                                            <span className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">{selectedChat.sender_role} • {selectedChat.email}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Messages Area */}
+                                                <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-stone-50/50 custom-scrollbar">
+                                                    {chatHistory.map((msg, i) => {
+                                                        const isAdmin = msg.sender_role === 'admin';
+                                                        return (
+                                                            <div key={i} className={`flex ${isAdmin ? 'justify-end' : 'justify-start'}`}>
+                                                                <div className={`max-w-[70%] p-5 rounded-[24px] shadow-sm relative ${isAdmin ? 'bg-stone-900 text-white rounded-tr-none' : 'bg-white border border-stone-200 text-stone-800 rounded-tl-none'}`}>
+                                                                    <p className="text-sm font-medium leading-relaxed">{msg.message}</p>
+                                                                    <span className="text-[9px] mt-2 block opacity-40 font-black uppercase tracking-widest">
+                                                                        {new Date(msg.created_at).toLocaleTimeString()}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                    <div ref={chatEndRef} />
+                                                </div>
+
+                                                {/* Send Box */}
+                                                <form onSubmit={sendChatMessage} className="p-6 bg-white border-t border-stone-100 flex items-center gap-4">
+                                                    <input
+                                                        type="text"
+                                                        value={chatInput}
+                                                        onChange={(e) => setChatInput(e.target.value)}
+                                                        placeholder="Type a response..."
+                                                        className="flex-1 bg-stone-50 border border-stone-200 rounded-2xl px-6 py-4 text-sm font-medium focus:outline-none focus:border-emerald-500 transition-all shadow-inner"
+                                                    />
+                                                    <button
+                                                        type="submit"
+                                                        className="w-14 h-14 bg-emerald-600 text-white rounded-2xl flex items-center justify-center hover:bg-emerald-700 hover:-translate-y-1 transition-all shadow-lg active:scale-95"
+                                                    >
+                                                        <Send className="w-5 h-5" />
+                                                    </button>
+                                                </form>
+                                            </>
+                                        ) : (
+                                            <div className="flex-1 flex flex-col items-center justify-center p-20 text-center opacity-30">
+                                                <MessageSquare className="w-20 h-20 mb-6 text-stone-200" />
+                                                <h3 className="text-2xl font-black text-stone-900">Select a Conversation</h3>
+                                                <p className="max-w-xs mt-2 font-bold uppercase text-[10px] tracking-[0.2em]">Select a traveler or guide from the left to start live communication</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
                         </motion.div>
                     </AnimatePresence>
                 </main>
@@ -592,6 +852,7 @@ const AdminDashboard = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
         </div>
     );
 };

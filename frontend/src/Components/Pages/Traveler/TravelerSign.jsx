@@ -120,9 +120,9 @@ const TravelerSign = () => {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-aurora">
       {/* Left Side - Image & Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-linear-to-br from-blue-600 via-purple-600 to-pink-600 overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-[#0284C7] to-[#10B981] overflow-hidden">
         {/* Animated Background Elements 
         <div className="absolute inset-0">
           <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl animate-pulse" />
@@ -160,7 +160,7 @@ const TravelerSign = () => {
             </div>
             <h1 className="text-5xl font-bold mb-6 leading-tight">
               Discover the<br />
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-300 to-pink-300">
+              <span className="text-white font-extrabold drop-shadow-md">
                 Beauty of Pakistan
               </span>
             </h1>
@@ -189,20 +189,20 @@ const TravelerSign = () => {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-linear-to-br from-gray-50 to-blue-50">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="bg-linear-to-r from-blue-600 to-purple-600 p-3 rounded-xl">
+            <div className="bg-gradient-to-r from-[#0284C7] to-[#10B981] p-3 rounded-xl">
               <MapPin className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="text-xl font-bold text-gradient">
               Pakistan Travel
             </span>
           </div>
 
           {/* Form Card */}
-          <div className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100">
+          <div className="glass-card rounded-3xl p-8 border border-gray-100">
             {/* Header */}
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-2">
@@ -286,7 +286,7 @@ const TravelerSign = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-500/30 transform hover:scale-[1.02] transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full btn-premium py-4 rounded-xl flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
                 {!loading && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
@@ -302,7 +302,7 @@ const TravelerSign = () => {
                   setError('');
                   setFormData({ name: '', email: '', password: '' });
                 }}
-                className="font-semibold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent hover:from-purple-600 hover:to-pink-600 transition-all"
+                className="font-semibold text-[#0284C7] hover:text-[#10B981] transition-all"
               >
                 {isSignUp ? 'Sign In' : 'Sign Up'}
               </button>

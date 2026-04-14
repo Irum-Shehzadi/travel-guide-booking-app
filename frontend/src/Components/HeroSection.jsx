@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import Globe3D from "./Globe3D";
 import GallerySection from "./Landing/GallerySection";
 import ReviewSection from "./Landing/ReviewSection";
+import GuideTestimonials from "./Landing/GuideTestimonials";
 
 // Animated counter component
 const AnimatedCounter = ({ target, duration = 2000, suffix = "" }) => {
@@ -49,7 +50,7 @@ const HeroSection = () => {
             <div className="absolute top-0 left-1/4 aurora-glow opacity-40 bg-green-200" />
             <div className="absolute bottom-0 right-1/4 aurora-glow opacity-40 bg-amber-100" />
 
-            <section className="relative max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center py-10 sm:py-16 lg:py-20">
+            <section className="relative max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-[1.2fr_0.8fr] gap-8 lg:gap-16 items-center py-10 sm:py-16 lg:py-20">
                 {/* Left Content */}
                 <div className="z-10 text-center lg:text-left">
                     <motion.div
@@ -70,12 +71,12 @@ const HeroSection = () => {
                         transition={{ delay: 0.2 }}
                     >
                         Your Gateway to{' '}
-                        <span className="text-gradient drop-shadow-sm">Majestic Pakistan</span>
+                        <span className="text-gradient drop-shadow-sm italic">Majestic Pakistan</span>
                     </motion.h1>
 
                     <motion.div
                         className="flex items-center justify-center lg:justify-start gap-3 mb-5 sm:mb-8 text-lg sm:text-xl md:text-2xl text-stone-600"
-                        style={{ fontFamily: 'var(--font-display)', fontWeight: 500 }}
+                        style={{ fontFamily: 'var(--font-body)', fontWeight: 600 }}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.4 }}
@@ -85,7 +86,6 @@ const HeroSection = () => {
                                 <motion.span
                                     key={wordIndex}
                                     className="block text-amber-600 font-bold drop-shadow-sm"
-                                    style={{ fontFamily: 'var(--font-display)' }}
                                     initial={{ y: 20, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     exit={{ y: -20, opacity: 0 }}
@@ -125,12 +125,12 @@ const HeroSection = () => {
 
                 {/* Right Content - 3D Globe (hidden on small screens) */}
                 <motion.div
-                    className="hidden sm:flex relative w-full h-[300px] md:h-[450px] lg:h-[600px] items-center justify-center p-6 sm:p-12"
+                    className="hidden sm:flex relative w-full h-[300px] md:h-[450px] lg:h-[600px] items-center justify-end p-6 sm:p-12 lg:pr-0"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 1 }}
                 >
-                    <div className="absolute inset-0 bg-emerald-500/10 blur-[120px] rounded-full scale-150 animate-pulse" />
+
                     <Suspense fallback={<div className="text-emerald-700 animate-pulse text-sm font-semibold">Loading Globe...</div>}>
                         <Globe3D />
                     </Suspense>
@@ -192,6 +192,9 @@ const HeroSection = () => {
 
             {/* Review Section */}
             <ReviewSection />
+
+            {/* Featured Guide Testimonials */}
+            <GuideTestimonials />
         </div>
     );
 };

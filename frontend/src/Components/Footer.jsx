@@ -11,9 +11,9 @@ const Footer = () => {
                 {/* About / Branding - spans 2 cols on smallest screens */}
                 <div className="col-span-2 sm:col-span-2 md:col-span-1 space-y-5">
                     <Link to="/" className="flex items-center gap-3 group">
-                        <img src={logo} alt="Logo" className="h-10 sm:h-12 w-auto object-contain drop-shadow-[0_0_15px_rgba(16,185,129,0.3)] group-hover:scale-105 transition-transform duration-300" />
-                        <span className="text-xl sm:text-2xl font-black tracking-tight text-stone-900 drop-shadow-sm" style={{ fontFamily: 'var(--font-display)' }}>
-                            Travel<span className="text-emerald-600">Guide</span>
+                        <img src={logo} alt="Logo" className="h-12 sm:h-16 w-auto object-contain drop-shadow-[0_0_20px_rgba(16,185,129,0.4)] group-hover:scale-105 transition-transform duration-300 brightness-110 saturate-150 contrast-125" />
+                        <span className="text-2xl sm:text-3xl font-black tracking-tight text-gradient drop-shadow-sm" style={{ fontFamily: 'var(--font-display)' }}>
+                            TravelGuide
                         </span>
                     </Link>
                     <p className="text-stone-600 leading-relaxed text-sm font-medium">

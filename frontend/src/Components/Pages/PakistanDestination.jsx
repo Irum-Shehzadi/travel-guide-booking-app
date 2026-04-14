@@ -5,7 +5,7 @@ import { provincesData, getAllCities, getFeaturedDestinations, searchDestination
 import WeatherWidget from '../common/WeatherWidget';
 import { searchPlaces } from '../../api/places';
 import PlaceCard from '../PlaceCard';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import DestinationReviewForm from '../DestinationReviewForm';
 
 const iconMap = {
@@ -19,11 +19,22 @@ const iconMap = {
 
 export default function PakistanDestinations() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [showReviewForm, setShowReviewForm] = useState(false);
+
+  // Auto-search from URL query params
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const search = params.get('search');
+    if (search) {
+      setSearchQuery(search);
+      setShowSearch(true);
+    }
+  }, [location]);
 
   // City Detail States
   const [activeTab, setActiveTab] = useState('overview');

@@ -299,14 +299,14 @@ const GuideRegistration = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-purple-50 to-pink-50 py-8 sm:py-12 px-4">
+    <div className="min-h-screen bg-aurora py-8 sm:py-12 px-4 shadow-inner">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-linear-to-r from-blue-600 to-purple-600 rounded-full mb-3 sm:mb-4 shadow-lg">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-[#0284C7] to-[#10B981] rounded-full mb-3 sm:mb-4 shadow-lg">
             <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gradient mb-2">
             Become a Guide
           </h1>
           <p className="text-sm sm:text-base text-gray-600">Join our community of expert travel guides</p>
@@ -318,7 +318,7 @@ const GuideRegistration = () => {
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center flex-1">
                 <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full text-xs sm:text-base font-semibold transition-all duration-300 ${step >= s
-                  ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-110'
+                  ? 'bg-gradient-to-r from-[#0284C7] to-[#10B981] text-white shadow-lg scale-110'
                   : 'bg-gray-200 text-gray-500'
                   }`}>
                   {step > s ? <CheckCircle className="w-4 h-4 sm:w-6 sm:h-6" /> : s}
@@ -338,7 +338,7 @@ const GuideRegistration = () => {
         </div>
 
         {/* Form Container */}
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div className="glass-card rounded-3xl overflow-hidden">
           <div className="p-5 sm:p-8 md:p-10">
             {/* Error Message */}
             {error && (
@@ -358,7 +358,7 @@ const GuideRegistration = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className={`relative transition-all duration-300 ${focused === 'name' ? 'transform scale-[1.02]' : ''}`}>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
-                    <div className={`absolute left-4 top-[46px] transition-colors duration-300 ${focused === 'name' ? 'text-blue-600' : 'text-gray-400'}`}>
+                    <div className={`absolute left-4 top-[46px] transition-colors duration-300 ${focused === 'name' ? 'text-[#0284C7]' : 'text-gray-400'}`}>
                       <User className="w-5 h-5" />
                     </div>
                     <input
@@ -490,8 +490,8 @@ const GuideRegistration = () => {
                         type="button"
                         onClick={() => toggleSelection(formData.languages, lang, 'languages')}
                         className={`p-3 rounded-xl border-2 font-medium transition-all duration-300 ${formData.languages.includes(lang)
-                          ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white border-transparent shadow-lg scale-105'
-                          : 'bg-white text-gray-700 border-gray-200 hover:border-blue-500 hover:bg-blue-50'
+                          ? 'bg-gradient-to-r from-[#0284C7] to-[#10B981] text-white border-transparent shadow-lg scale-105'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#0284C7] hover:bg-blue-50'
                           }`}
                       >
                         {lang}
@@ -509,8 +509,8 @@ const GuideRegistration = () => {
                         type="button"
                         onClick={() => toggleSelection(formData.specializations, spec, 'specializations')}
                         className={`p-4 rounded-xl border-2 font-medium text-left transition-all duration-300 ${formData.specializations.includes(spec)
-                          ? 'bg-linear-to-r from-blue-600 to-purple-600 text-white border-transparent shadow-lg scale-[1.02]'
-                          : 'bg-white text-gray-700 border-gray-200 hover:border-blue-500 hover:bg-blue-50'
+                          ? 'bg-gradient-to-r from-[#0284C7] to-[#10B981] text-white border-transparent shadow-lg scale-[1.02]'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#10B981] hover:bg-green-50'
                           }`}
                       >
                         {spec}
@@ -723,7 +723,7 @@ const GuideRegistration = () => {
                 type="button"
                 onClick={() => step < 3 ? handleNext() : handleSubmit()}
                 disabled={loading}
-                className="flex-1 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-500/30 transform hover:scale-[1.02] transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 btn-premium py-4 rounded-xl flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Submitting...' : (step < 3 ? 'Next Step' : 'Submit Registration')}
                 {!loading && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
