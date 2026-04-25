@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from models import TravelerSignup, TravelerLogin, Token
 from database import get_database
 from utils import get_password_hash, verify_password, create_access_token
-from datetime import timedelta
+from datetime import datetime, timedelta
 import os
 
 router = APIRouter(prefix="/api/traveler", tags=["Traveler"])
@@ -35,7 +35,7 @@ async def traveler_signup(traveler: TravelerSignup):
         "name": traveler.name,
         "email": traveler.email,
         "hashed_password": hashed_password,
-        "created_at": None,  # Will be set by default in DB
+        "created_at": datetime.utcnow(),
         "is_active": True
     }
     
