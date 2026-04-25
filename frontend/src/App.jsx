@@ -57,7 +57,7 @@ function App() {
         <Route path="/guide/:id" element={<GuideDetail />} />
 
         {/* Guide Booking - Only for travelers */}
-        <Route path="/guide-booking" element={<ProtectedRoute allowedRoles={['traveler']}><GuideBooking /></ProtectedRoute>} />
+        <Route path="/guide-booking" element={<ProtectedRoute allowedRoles={['traveler', 'guide', 'admin']}><GuideBooking /></ProtectedRoute>} />
 
         <Route path="/pakistan-destinations" element={<ProtectedRoute><PakistanDestinations /></ProtectedRoute>} />
       </Routes>

@@ -104,7 +104,10 @@ async def create_and_send_notification(
     }
 
     # Push to recipient in real-time
-    await manager.send_to_user(recipient_email, ws_payload)
+    if recipient_email == "admin":
+        await manager.broadcast_to_admins(ws_payload)
+    else:
+        await manager.send_to_user(recipient_email, ws_payload)
 
     return str(result.inserted_id)
 
@@ -133,7 +136,11 @@ async def get_notifications(email: str, limit: int = 30, unread_only: bool = Fal
     """Get notifications for a user by email."""
     db = await get_database()
 
-    query = {"recipient_email": email}
+    if email.startswith("admin"):
+        query = {"recipient_email": {"$in": [email, "admin"]}}
+    else:
+        query = {"recipient_email": email}
+        
     if unread_only:
         query["is_read"] = False
 
@@ -152,7 +159,10 @@ async def get_notifications(email: str, limit: int = 30, unread_only: bool = Fal
             "metadata": n.get("metadata", {}),
         })
 
-    unread_count = await db.notifications.count_documents({"recipient_email": email, "is_read": False})
+    # Use the same query logic for unread count, but make sure to only look for unread
+    count_query = query.copy()
+    count_query["is_read"] = False
+    unread_count = await db.notifications.count_documents(count_query)
 
     return {"notifications": result, "unread_count": unread_count}
 
@@ -175,8 +185,13 @@ async def mark_as_read(notification_id: str):
 async def mark_all_as_read(email: str):
     """Mark all notifications for a user as read."""
     db = await get_database()
+    
+    query = {"recipient_email": email, "is_read": False}
+    if email.startswith("admin"):
+        query = {"recipient_email": {"$in": [email, "admin"]}, "is_read": False}
+        
     result = await db.notifications.update_many(
-        {"recipient_email": email, "is_read": False},
+        query,
         {"$set": {"is_read": True}}
     )
     return {"message": f"Marked {result.modified_count} notifications as read"}

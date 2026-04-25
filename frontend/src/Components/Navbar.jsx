@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { IoChevronDown } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { User, LogOut, Menu, X, Shield } from "lucide-react";
+import { User, LogOut, Menu, X, Shield, MapPin, Compass, Briefcase, Eye, EyeOff } from "lucide-react";
 import logo from "../assets/logo.png";
 import NotificationDropdown from "./NotificationDropdown";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
@@ -49,9 +50,7 @@ const Navbar = () => {
           <ul className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-semibold text-stone-600">
             <li><Link to="/" className="hover:text-emerald-600 transition-colors">Home</Link></li>
             <li><Link to="/pakistan-destinations" className="hover:text-emerald-600 transition-colors">Destinations</Link></li>
-            {(!isAuthenticated || user?.type === 'traveler') && (
-              <li><Link to="/guide-booking" className="hover:text-emerald-600 transition-colors">Guides</Link></li>
-            )}
+            <li><Link to="/guide-booking" className="hover:text-emerald-600 transition-colors">Guides</Link></li>
             <li><Link to="/about" className="hover:text-emerald-600 transition-colors">About</Link></li>
             <li><Link to="/contact" className="hover:text-emerald-600 transition-colors">Contact</Link></li>
           </ul>
@@ -89,7 +88,7 @@ const Navbar = () => {
                       </p>
                     </div>
                     <Link
-                      to={user?.type === 'guide' ? "/guide-dashboard" : "/traveler-dashboard"}
+                      to={user?.type === 'guide' ? "/guide-dashboard" : user?.type === 'admin' ? "/admin-dashboard" : "/traveler-dashboard"}
                       onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-3 px-5 py-3 text-sm font-medium text-stone-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
                     >
@@ -108,9 +107,12 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="hidden sm:flex items-center gap-3">
-                <Link to="/traveler-signin" className="text-sm font-bold text-stone-700 hover:text-emerald-600 transition-colors px-3 lg:px-4 py-2">
+                <button 
+                  onClick={() => setShowRoleModal(true)}
+                  className="text-sm font-bold text-stone-700 hover:text-emerald-600 transition-colors px-3 lg:px-4 py-2"
+                >
                   Sign In
-                </Link>
+                </button>
                 <Link to="/guide-registration" className="btn-premium flex items-center gap-2 text-sm">
                   <Shield className="w-4 h-4" />
                   <span className="hidden lg:inline">Become a Guide</span>
@@ -167,7 +169,6 @@ const Navbar = () => {
                   {item.label}
                 </Link>
               ))}
-              {(!isAuthenticated || user?.type === 'traveler') && (
                 <Link
                   to="/guide-booking"
                   onClick={handleNavClick}
@@ -175,7 +176,6 @@ const Navbar = () => {
                 >
                   Guides
                 </Link>
-              )}
             </nav>
 
             <div className="p-5 border-t border-stone-100 space-y-3 bg-stone-50/50">
@@ -193,7 +193,7 @@ const Navbar = () => {
                     </div>
                   </div>
                   <Link
-                    to={user?.type === 'guide' ? "/guide-dashboard" : "/traveler-dashboard"}
+                    to={user?.type === 'guide' ? "/guide-dashboard" : user?.type === 'admin' ? "/admin-dashboard" : "/traveler-dashboard"}
                     onClick={handleNavClick}
                     className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl font-bold text-sm hover:bg-emerald-100 transition-all"
                   >
@@ -208,13 +208,15 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <Link
-                    to="/traveler-signin"
-                    onClick={handleNavClick}
+                  <button
+                    onClick={() => {
+                      setShowRoleModal(true);
+                      setOpen(false);
+                    }}
                     className="flex items-center justify-center w-full px-4 py-3 border border-stone-300 text-stone-700 rounded-xl font-bold text-sm hover:bg-stone-100 transition-all"
                   >
                     Sign In
-                  </Link>
+                  </button>
                   <Link
                     to="/guide-registration"
                     onClick={handleNavClick}
@@ -225,6 +227,71 @@ const Navbar = () => {
                   </Link>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Login Choice Modal */}
+      {showRoleModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+          <div 
+            className="absolute inset-0 bg-stone-900/60 backdrop-blur-md animate-in fade-in duration-300"
+            onClick={() => setShowRoleModal(false)}
+          />
+          
+          <div className="relative bg-white border border-stone-200 w-full max-w-xl rounded-[2.5rem] shadow-2xl p-6 sm:p-10 animate-in zoom-in-95 fade-in duration-300 overflow-hidden">
+            <button 
+              onClick={() => setShowRoleModal(false)}
+              className="absolute top-6 right-6 p-2 rounded-full hover:bg-stone-100 text-stone-400 hover:text-stone-900 transition-all z-10"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="relative z-10 text-center mb-8 sm:mb-12">
+              <h2 className="text-3xl sm:text-4xl font-black text-stone-900 mb-3" style={{ fontFamily: 'var(--font-display)' }}>
+                Welcome Back
+              </h2>
+              <p className="text-stone-500 font-medium">Please select your portal to continue</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 relative z-10">
+              <Link
+                to="/traveler-signin"
+                onClick={() => setShowRoleModal(false)}
+                className="group p-6 sm:p-8 rounded-[2rem] bg-white border border-stone-200 hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300 text-center flex flex-col items-center gap-4"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                  <Compass className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-stone-900 mb-1">Traveler</h3>
+                  <p className="text-sm text-stone-500">Plan and book your next trip</p>
+                </div>
+              </Link>
+
+              <Link
+                to="/guide-login"
+                onClick={() => setShowRoleModal(false)}
+                className="group p-6 sm:p-8 rounded-[2rem] bg-white border border-stone-200 hover:border-cyan-500 hover:shadow-xl hover:shadow-cyan-500/10 transition-all duration-300 text-center flex flex-col items-center gap-4"
+              >
+                <div className="w-16 h-16 rounded-2xl bg-cyan-50 text-cyan-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                  <Briefcase className="w-8 h-8" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-stone-900 mb-1">Travel Guide</h3>
+                  <p className="text-sm text-stone-500">Manage bookings and clients</p>
+                </div>
+              </Link>
+            </div>
+
+            <div className="mt-8 text-center relative z-10">
+              <Link 
+                to="/admin-login" 
+                onClick={() => setShowRoleModal(false)}
+                className="text-xs font-semibold text-stone-400 hover:text-emerald-600 transition-colors uppercase tracking-widest flex items-center justify-center gap-2"
+              >
+                Are you an Administrator? Click here
+              </Link>
             </div>
           </div>
         </div>

@@ -109,10 +109,22 @@ const AdminDashboard = () => {
 
     const fetchStats = async () => {
         try {
+            setLoading(true);
             const res = await fetch(`${API_BASE_URL}/api/admin/stats`);
+            if (!res.ok) throw new Error("Failed to fetch stats");
             const data = await res.json();
             setStats(data);
-        } catch (err) { console.error(err); } finally { setLoading(false); }
+        } catch (err) { 
+            console.error("Stats fetch error:", err);
+            // Fallback stats if server is momentarily unreachable
+            setStats({
+                travelers: 0, guides: 0, verified_guides: 0, unverified_guides: 0,
+                bookings: { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 },
+                contacts: { total: 0, unread: 0 }
+            });
+        } finally { 
+            setLoading(false); 
+        }
     };
 
     const fetchTravelers = async () => {
@@ -271,6 +283,24 @@ const AdminDashboard = () => {
                             );
                         })}
                     </nav>
+                    
+                    <p className="text-[10px] uppercase tracking-widest text-stone-400 font-bold mb-4 mt-8">External Views</p>
+                    <div className="space-y-2">
+                        <button 
+                            onClick={() => navigate('/traveler-dashboard')}
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-stone-500 hover:text-emerald-700 hover:bg-emerald-50 transition-all border border-transparent"
+                        >
+                            <Users className="w-5 h-5 opacity-60" />
+                            <span className="font-bold text-sm">Traveler View</span>
+                        </button>
+                        <button 
+                            onClick={() => navigate('/guide-dashboard')}
+                            className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-stone-500 hover:text-cyan-700 hover:bg-cyan-50 transition-all border border-transparent"
+                        >
+                            <MapPin className="w-5 h-5 opacity-60" />
+                            <span className="font-bold text-sm">Guide View</span>
+                        </button>
+                    </div>
                 </div>
 
                 {/* Profile Widget Bottom */}
@@ -328,7 +358,7 @@ const AdminDashboard = () => {
                             className="max-w-6xl mx-auto"
                         >
                             {/* OVERVIEW TAB */}
-                            {activeTab === 'overview' && stats && (
+                            {activeTab === 'overview' && (
                                 <div className="space-y-8 sm:space-y-10">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                                         {[

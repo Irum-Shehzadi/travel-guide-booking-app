@@ -239,9 +239,9 @@ const TravelerDashboard = () => {
 
                                             <div className="flex items-center gap-4 self-end lg:self-center">
                                                 <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${(b.status || '').toLowerCase() === 'confirmed' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
-                                                        (b.status || '').toLowerCase() === 'pending' ? 'bg-amber-50 border-amber-200 text-amber-700' :
-                                                            (b.status || '').toLowerCase() === 'completed' ? 'bg-blue-50 border-blue-200 text-blue-700' :
-                                                                'bg-red-50 border-red-200 text-red-700'
+                                                    (b.status || '').toLowerCase() === 'pending' ? 'bg-amber-50 border-amber-200 text-amber-700' :
+                                                        (b.status || '').toLowerCase() === 'completed' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                                                            'bg-red-50 border-red-200 text-red-700'
                                                     }`}>
                                                     {b.status}
                                                 </div>

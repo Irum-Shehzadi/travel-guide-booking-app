@@ -27,10 +27,6 @@ const GuideBooking = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (isAuthenticated && user?.type === 'guide') navigate('/guide-dashboard');
-  }, [isAuthenticated, user, navigate]);
-
   useEffect(() => { fetchGuides(); }, []);
 
   const fetchGuides = async () => {

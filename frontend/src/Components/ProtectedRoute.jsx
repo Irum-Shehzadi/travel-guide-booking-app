@@ -19,8 +19,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/traveler-signin" replace />;
   }
 
-  // Check if user's role is allowed
-  if (allowedRoles && user?.type && !allowedRoles.includes(user.type)) {
+  // Check if user's role is allowed (Admins are always allowed)
+  if (allowedRoles && user?.type && user.type !== 'admin' && !allowedRoles.includes(user.type)) {
     // Redirect to appropriate dashboard based on role
     let redirectPath = '/traveler-dashboard';
     if (user.type === 'guide') redirectPath = '/guide-dashboard';
