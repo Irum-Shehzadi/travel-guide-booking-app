@@ -27,8 +27,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173", 
-        "http://127.0.0.1:5173"
-    ],  # Restricted to Vite Frontend environment
+        "http://127.0.0.1:5173",
+        "https://travel-guide-booking-app.onrender.com",  # Render backend (if needed)
+        "*"  # Allow all origins - restrict this after deployment with your actual frontend URL
+    ],  # Update "*" with your actual Vercel/Netlify frontend URL after deployment
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
