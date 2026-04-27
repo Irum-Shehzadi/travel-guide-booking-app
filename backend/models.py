@@ -219,6 +219,8 @@ class NotificationType(str, Enum):
     GUIDE_VERIFIED = "guide_verified"
     SUPPORT_MESSAGE = "support_message"
     SYSTEM = "system"
+    NEW_TRAVELER = "new_traveler"
+    NEW_GUIDE = "new_guide"
 
 class NotificationCreate(BaseModel):
     recipient_email: str

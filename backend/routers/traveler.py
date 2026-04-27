@@ -4,6 +4,8 @@ from database import get_database
 from utils import get_password_hash, verify_password, create_access_token
 from datetime import datetime, timedelta
 import os
+from models import NotificationType
+from routers.notification import create_and_send_notification
 
 router = APIRouter(prefix="/api/traveler", tags=["Traveler"])
 
@@ -42,6 +44,17 @@ async def traveler_signup(traveler: TravelerSignup):
     
     result = await db.travelers.insert_one(traveler_doc)
     print(f"[TRAVELER SIGNUP] Created traveler with ID: {result.inserted_id}")
+    
+    # Notify admin
+    await create_and_send_notification(
+        recipient_email="admin",
+        recipient_type="admin",
+        notif_type=NotificationType.NEW_TRAVELER,
+        title="New Traveler Registered!",
+        message=f"Traveler {traveler.name} ({traveler.email}) just created an account.",
+        link="/admin/travelers",
+        metadata={"traveler_id": str(result.inserted_id)}
+    )
     
     
     access_token = create_access_token(

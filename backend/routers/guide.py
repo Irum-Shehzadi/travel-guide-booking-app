@@ -5,6 +5,8 @@ from typing import List
 from utils import get_password_hash, verify_password, create_access_token
 from datetime import timedelta
 import os
+from models import NotificationType
+from routers.notification import create_and_send_notification
 
 router = APIRouter(prefix="/api/guide", tags=["Guide"])
 
@@ -49,6 +51,17 @@ async def guide_registration(guide: GuideRegistration):
     
   
     result = await db.guides.insert_one(guide_doc)
+    
+    # Notify admin
+    await create_and_send_notification(
+        recipient_email="admin",
+        recipient_type="admin",
+        notif_type=NotificationType.NEW_GUIDE,
+        title="New Guide Application!",
+        message=f"Guide {guide.fullName} ({guide.email}) has submitted an application for verification.",
+        link="/admin/guides",
+        metadata={"guide_id": str(result.inserted_id)}
+    )
     
     
     access_token = create_access_token(

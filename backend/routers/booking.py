@@ -82,6 +82,17 @@ async def create_booking(booking: BookingCreate):
         metadata={"booking_id": str(result.inserted_id), "traveler_name": booking.traveler_name, "destination": booking.destination}
     )
     
+    # Send notification to admin
+    await create_and_send_notification(
+        recipient_email="admin",
+        recipient_type="admin",
+        notif_type=NotificationType.BOOKING_NEW,
+        title="New Booking Created",
+        message=f"{booking.traveler_name} booked guide {guide['fullName']} for {booking.destination}.",
+        link="/admin/bookings",
+        metadata={"booking_id": str(result.inserted_id)}
+    )
+    
     return {
         "message": "Booking created successfully",
         "booking": {
@@ -277,6 +288,18 @@ async def update_booking_status(booking_id: str, update: BookingUpdate):
             message=message,
             link="/traveler-dashboard",
             metadata={"booking_id": booking_id, "guide_name": booking["guide_name"], "destination": booking["destination"]}
+        )
+        
+        # Also notify the admin
+        admin_message = f"Booking for {booking['destination']} by {booking['traveler_name']} with {booking['guide_name']} is now {update.status.value}."
+        await create_and_send_notification(
+            recipient_email="admin",
+            recipient_type="admin",
+            notif_type=notif_type_map[update.status],
+            title=f"Booking {update.status.value.capitalize()}",
+            message=admin_message,
+            link="/admin/bookings",
+            metadata={"booking_id": booking_id}
         )
     
     return {

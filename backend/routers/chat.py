@@ -95,6 +95,16 @@ async def chat_websocket(websocket: WebSocket, email: str):
                 )
             else:
                 await manager.send_message(message_dict, message["receiver_email"])
+                # Also send a system notification to the user when admin replies
+                if message["sender_email"] == "admin":
+                    await create_and_send_notification(
+                        recipient_email=message["receiver_email"],
+                        recipient_type=msg_data.get("receiver_role", "traveler"),
+                        notif_type=NotificationType.SUPPORT_MESSAGE,
+                        title="New Message from Support",
+                        message=message["message"][:40],
+                        link="/chat"
+                    )
                 
             # Echo back to sender (all tabs)
             await manager.send_message(message_dict, email)
