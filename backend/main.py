@@ -30,7 +30,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "https://travel-guide-booking-app.onrender.com",
         # TODO: Add your Vercel/Netlify frontend URL here after deployment
-        # "https://your-frontend.vercel.app",
+        "https://travel-guide-booking-app.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
