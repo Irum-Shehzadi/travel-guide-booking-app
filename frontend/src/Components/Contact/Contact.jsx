@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "../../context/AuthContext";
 import { Mail, Phone, MapPin, Globe, Zap, MessageSquare, Compass, Shield, ArrowRight, ShieldCheck } from "lucide-react";
-import ChatWidget from "../Common/ChatWidget";
+import ChatWidget from "../common/ChatWidget";
 
 const Contact = () => {
   const { isAuthenticated } = useAuth();
