@@ -4,25 +4,25 @@ import { X, MapPin, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const baseDestinations = [
-    { title: "Hunza Valley", desc: "The real-life Shangri-La with stunning mountain views and Attabad Lake." },
-    { title: "Swat Valley", desc: "The Switzerland of the East with emerald lakes and pine forests." },
-    { title: "Skardu", desc: "The gateway to K2 and the world's highest peaks in Baltistan." },
+    { title: "Hunza Valley", desc: "The real-life Shangri-La with stunning mountain views and Attabad Lake.", image: "https://images.unsplash.com/photo-1514558427911-8e293bebf18c?w=1200&auto=format&fit=crop&q=80" },
+    { title: "Swat Valley", desc: "The Switzerland of the East with emerald lakes and pine forests.", image: "https://images.unsplash.com/photo-1721910284841-53aa2a74c836?w=1200&auto=format&fit=crop&q=80" },
+    { title: "Skardu", desc: "The gateway to K2 and the world's highest peaks in Baltistan.", image: "https://media.istockphoto.com/id/2245745142/photo/aerial-view-of-winding-mountain-road-and-river-valley-in-northern-pakistan.webp?a=1&b=1&s=612x612&w=0&k=20&c=lVfxiO_GniBcELRanSEK9WG1uQSaUNQUmTyiSsomKt4=" },
     { title: "Neelum Valley", desc: "The blue gem of Kashmir with lush green forests and waterfalls." },
     { title: "Fairy Meadows", desc: "A breathtaking plateau at the base of Nanga Parbat." },
     { title: "Naran Kaghan", desc: "The valley of lakes and legendary alpine landscapes." },
-    { title: "Lahore", desc: "The cultural heart of Pakistan with magnificent Mughal architecture." },
-    { title: "Karachi", desc: "The vibrant city of lights and beautiful Arabian Sea coastline." },
+    { title: "Lahore", desc: "The cultural heart of Pakistan with magnificent Mughal architecture.", image: "https://images.unsplash.com/photo-1767126427076-b69111c731d6?w=1200&auto=format&fit=crop&q=80" },
+    { title: "Karachi", desc: "The vibrant city of lights and beautiful Arabian Sea coastline.", image: "https://images.unsplash.com/photo-1708180449325-cec285fa04cf?w=1200&auto=format&fit=crop&q=80" },
     { title: "Kumrat Valley", desc: "A pristine hidden paradise with untouched natural beauty." },
-    { title: "Quetta", desc: "The fruit garden of Pakistan surrounded by majestic mountains." },
+    { title: "Quetta", desc: "The fruit garden of Pakistan surrounded by majestic mountains.", image: "https://media.istockphoto.com/id/465885635/photo/kalabagh-bridge-over-river-indus.jpg?s=612x612&w=0&k=20&c=uxi5xCoZp51BnEY5VCYqwkXhkJlj91N3vcZ_ldHQ4UI=" },
     { title: "Gwadar", desc: "The port of the future with golden beaches and unique cliffs." },
-    { title: "Islamabad", desc: "The serene capital nestled at the foot of Margalla Hills." },
+    { title: "Islamabad", desc: "The serene capital nestled at the foot of Margalla Hills.", image: "https://images.unsplash.com/photo-1706708081520-fd755a62fd4d?w=1200&auto=format&fit=crop&q=80" },
     { title: "Multan", desc: "The ancient city of saints, shrines, and blue pottery." },
     { title: "Murree", desc: "The Queen of Hills with misty mountains and lush greenery." },
     { title: "Chitral", desc: "The land of the Kalash tribe and ancient mountain forts." }
 ];
 
 const photoIds = [
-    "1627896157734-4cfcf0bfa3f4", "1574182903332-613bfa319760", "1621831836173-10815152ed4d",
+    "1514558427911-8e293bebf18c", "1574182903332-613bfa319760", "1621831836173-10815152ed4d",
     "1590396013316-f64f3d2f232f", "1632822830847-d352b92641e4", "1588725807968-36423c5d6c93",
     "1688628994503-b0f3e6c0c2be", "1464822759023-fed622ff2c3b", "1470071131384-001b85755b36",
     "1433086966358-54859d0ed716", "1472214103451-9374bd1c798e", "1501854140801-50d01698950b",
@@ -42,7 +42,7 @@ const galleryData = Array.from({ length: 30 }).map((_, i) => {
     return {
         id: i + 1,
         title: dest.title + titleSuffix,
-        image: `https://images.unsplash.com/photo-${photo}?auto=format&fit=crop&w=${dim.w}&h=${dim.h}&q=80`,
+        image: dest.image || `https://images.unsplash.com/photo-${photo}?auto=format&fit=crop&w=${dim.w}&h=${dim.h}&q=80`,
         description: dest.desc + " Experience raw, unfiltered nature with our expert guides who know every hidden trail.",
         elevation: (4000 + (Math.floor(i * 300))) + " ft",
         bestTime: "April to October"
