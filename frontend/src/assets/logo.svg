@@ -1,0 +1,40 @@
+<svg width="500" height="440" viewBox="0 0 500 440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for the main text (Keeping the new brand gradient) -->
+    <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#0284C7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#10B981;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background / Sun Arc (Original Color) -->
+  <path d="M150,150 Q250,50 380,180" fill="none" stroke="#F59E0B" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+  
+  <!-- Waves (Original Colors) -->
+  <path d="M100,280 Q200,240 300,280 T500,280" fill="none" stroke="#0EA5E9" stroke-width="12" stroke-linecap="round"/>
+  <path d="M120,300 Q220,260 320,300 T520,300" fill="none" stroke="#0369A1" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Island / Palm Trees Base -->
+  <path d="M100,280 Q150,220 220,280" fill="#10B981" />
+
+  <!-- Palm Tree 1 -->
+  <path d="M160,250 Q150,200 155,160" fill="none" stroke="#064E3B" stroke-width="6" />
+  <path d="M155,160 Q130,140 110,170 M155,160 Q140,120 180,130 M155,160 Q180,140 200,170" fill="none" stroke="#10B981" stroke-width="4" />
+
+  <!-- Palm Tree 2 (Smaller) -->
+  <path d="M130,260 Q120,230 125,200" fill="none" stroke="#064E3B" stroke-width="4" />
+  <path d="M125,200 Q105,185 90,210 M125,200 Q115,170 145,175 M125,200 Q145,185 160,210" fill="none" stroke="#10B981" stroke-width="3" />
+
+  <!-- Suitcase (Original darker green) -->
+  <rect x="230" y="190" width="60" height="70" rx="8" fill="#15803D" />
+  <rect x="245" y="175" width="30" height="20" rx="4" fill="none" stroke="#15803D" stroke-width="4" />
+  <path d="M245,230 L255,240 L275,220" fill="none" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Airplane -->
+  <path d="M300,180 L330,160 L320,155 L315,158 L310,150 L305,155 L300,152 Z" fill="#451A03" transform="rotate(-10, 315, 165)" />
+  <path d="M290,200 Q310,190 340,160" fill="none" stroke="#451A03" stroke-width="1" stroke-dasharray="4,4" />
+
+  <!-- Text (Keeping the new improved colors) -->
+  <text x="250" y="380" font-family="Arial, sans-serif" font-size="48" font-weight="900" fill="url(#brandGradient)" text-anchor="middle" style="letter-spacing: 2px;">TRAVEL GUIDE</text>
+  <text x="250" y="420" font-family="Arial, sans-serif" font-size="28" font-weight="800" fill="#0284C7" text-anchor="middle" style="letter-spacing: 6px;">BOOKING</text>
+</svg>

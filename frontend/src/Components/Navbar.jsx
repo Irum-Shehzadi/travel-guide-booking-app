@@ -3,7 +3,7 @@ import { IoChevronDown } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { User, LogOut, Menu, X, Shield, MapPin, Compass, Briefcase, Eye, EyeOff } from "lucide-react";
-import logo from "../assets/logo.png";
+import logo from "../assets/logo.svg";
 import NotificationDropdown from "./NotificationDropdown";
 
 const Navbar = () => {

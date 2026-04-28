@@ -6,7 +6,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import logo from "../../../assets/logo.png";
+import logo from "../../../assets/logo.svg";
 import NotificationDropdown from '../../NotificationDropdown';
 
 const API_BASE_URL = "http://localhost:8000";
