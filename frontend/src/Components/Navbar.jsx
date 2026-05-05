@@ -135,7 +135,7 @@ const Navbar = () => {
 
       {/* Mobile Drawer */}
       {open && (
-        <div className="fixed inset-0 z-40 md:hidden">
+        <div className="fixed inset-0 z-[60] md:hidden">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm"
