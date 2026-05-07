@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import { 
     AlertTriangle, Shield, ShieldAlert, ShieldCheck, 
     User, MapPin, Clock, Search, Filter, 
@@ -38,7 +39,7 @@ const AdminComplaints = () => {
 
     const handleAction = async (complaintId, action) => {
         if (!adminNote && action !== 'dismiss') {
-            alert("Please add an admin note for this action.");
+            toast.error("Please add an admin note for this action.");
             return;
         }
 
@@ -51,17 +52,17 @@ const AdminComplaints = () => {
             });
 
             if (response.ok) {
-                alert(`Action ${action} taken successfully!`);
+                toast.success(`Action ${action} taken successfully!`);
                 setAdminNote('');
                 setSelectedComplaint(null);
                 fetchComplaints();
             } else {
                 const error = await response.json();
-                alert(error.detail || "Failed to take action");
+                toast.error(error.detail || "Failed to take action");
             }
         } catch (err) {
             console.error("Error taking action:", err);
-            alert("Connection error");
+            toast.error("Connection error");
         } finally {
             setIsActionLoading(false);
         }

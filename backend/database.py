@@ -17,8 +17,8 @@ async def get_database():
     return database.client[DATABASE_NAME]
 
 async def connect_to_mongo():
-    database.client = AsyncIOMotorClient(MONGODB_URL)
-    print(f"Connected to MongoDB at {MONGODB_URL}")
+    database.client = AsyncIOMotorClient(MONGODB_URL, tlsAllowInvalidCertificates=True)
+    print(f"Connected to MongoDB")
 
 async def close_mongo_connection():
     if database.client:

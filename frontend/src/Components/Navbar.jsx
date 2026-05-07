@@ -284,15 +284,7 @@ const Navbar = () => {
               </Link>
             </div>
 
-            <div className="mt-8 text-center relative z-10">
-              <Link 
-                to="/admin-login" 
-                onClick={() => setShowRoleModal(false)}
-                className="text-xs font-semibold text-stone-400 hover:text-emerald-600 transition-colors uppercase tracking-widest flex items-center justify-center gap-2"
-              >
-                Are you an Administrator? Click here
-              </Link>
-            </div>
+
           </div>
         </div>
       )}

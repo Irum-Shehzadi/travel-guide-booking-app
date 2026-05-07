@@ -20,8 +20,9 @@ import GuideDetail from "./Components/Pages/Guide/GuideDetail";
 
 // Admin imports
 import AdminLogin from "./Components/Pages/Admin/AdminLogin";
-import AdminDashboard from "./Components/Pages/Admin/AdminDashboard";
-import AdminComplaints from "./Components/Pages/Admin/AdminComplaints";
+import AdminDashboard from './Components/Pages/Admin/AdminDashboard';
+import AdminComplaints from './Components/Pages/Admin/AdminComplaints';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   const location = useLocation();
@@ -64,6 +65,33 @@ function App() {
         <Route path="/pakistan-destinations" element={<ProtectedRoute><PakistanDestinations /></ProtectedRoute>} />
       </Routes>
       {!isAdminRoute && <Footer />}
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            borderRadius: '24px',
+            background: '#fff',
+            color: '#1c1917',
+            fontFamily: 'Outfit, sans-serif',
+            fontSize: '14px',
+            fontWeight: 'bold',
+            padding: '16px 24px',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+          },
+          success: {
+            iconTheme: {
+              primary: '#059669',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#dc2626',
+              secondary: '#fff',
+            },
+          }
+        }}
+      />
     </>
   );
 }

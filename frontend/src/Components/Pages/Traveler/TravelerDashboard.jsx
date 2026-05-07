@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -135,14 +136,14 @@ const ReportForm = ({ booking, onClose }) => {
                 })
             });
             if (response.ok) {
-                alert('Complaint submitted to admin successfully. They will review it soon.');
+                toast.success('Complaint submitted to admin successfully. They will review it soon.');
                 onClose();
             } else {
                 const data = await response.json();
-                alert(data.detail || 'Failed to submit report');
+                toast.error(data.detail || 'Failed to submit report');
             }
         } catch (err) {
-            alert('Error submitting report');
+            toast.error('Error submitting report');
         } finally {
             setIsSubmitting(false);
         }
