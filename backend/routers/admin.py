@@ -1,9 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 from database import get_database
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from bson import ObjectId
 from utils import verify_password, get_password_hash
+from models import NotificationType
+from routers.notification import create_and_send_notification
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
@@ -26,23 +28,49 @@ async def admin_login(credentials: AdminLogin):
 @router.get("/stats")
 async def get_dashboard_stats():
     db = await get_database()
-    total_travelers = await db.travelers.count_documents({})
-    total_guides = await db.guides.count_documents({})
-    total_bookings = await db.bookings.count_documents({})
-    total_contacts = await db.contacts.count_documents({})
-    unread_contacts = await db.contacts.count_documents({"is_read": False})
-    pending_bookings = await db.bookings.count_documents({"status": "pending"})
-    confirmed_bookings = await db.bookings.count_documents({"status": "confirmed"})
-    completed_bookings = await db.bookings.count_documents({"status": "completed"})
-    cancelled_bookings = await db.bookings.count_documents({"status": "cancelled"})
-    verified_guides = await db.guides.count_documents({"is_verified": True})
-    unverified_guides = await db.guides.count_documents({"is_verified": False})
     
+    # Run counts in parallel or via aggregation
+    travelers_count = db.travelers.count_documents({})
+    guides_count = db.guides.count_documents({})
+    contacts_count = db.contacts.count_documents({})
+    unread_contacts = db.contacts.count_documents({"is_read": False})
+    
+    # Booking stats via aggregation (Faster)
+    booking_stats_pipeline = [
+        {"$group": {"_id": "$status", "count": {"$sum": 1}}}
+    ]
+    booking_counts = await db.bookings.aggregate(booking_stats_pipeline).to_list(length=100)
+    
+    # Guide verification stats
+    guide_verify_pipeline = [
+        {"$group": {"_id": "$is_verified", "count": {"$sum": 1}}}
+    ]
+    guide_counts = await db.guides.aggregate(guide_verify_pipeline).to_list(length=100)
+
+    # Process results
+    b_stats = {item["_id"]: item["count"] for item in booking_counts}
+    g_stats = {str(item["_id"]): item["count"] for item in guide_counts}
+
+    total_travelers = await travelers_count
+    total_guides = await guides_count
+    total_contacts = await contacts_count
+    unread_contacts_count = await unread_contacts
+
     return {
-        "travelers": total_travelers, "guides": total_guides, "verified_guides": verified_guides, "unverified_guides": unverified_guides,
-        "bookings": {"total": total_bookings, "pending": pending_bookings, "confirmed": confirmed_bookings, "completed": completed_bookings, "cancelled": cancelled_bookings},
-        "contacts": {"total": total_contacts, "unread": unread_contacts}
+        "travelers": total_travelers, 
+        "guides": total_guides, 
+        "verified_guides": g_stats.get("True", 0), 
+        "unverified_guides": g_stats.get("False", 0),
+        "bookings": {
+            "total": sum(b_stats.values()), 
+            "pending": b_stats.get("pending", 0), 
+            "confirmed": b_stats.get("confirmed", 0), 
+            "completed": b_stats.get("completed", 0), 
+            "cancelled": b_stats.get("cancelled", 0)
+        },
+        "contacts": {"total": total_contacts, "unread": unread_contacts_count}
     }
+
 
 # ============ USERS MANAGEMENT ============
 @router.get("/travelers")
@@ -109,3 +137,105 @@ async def delete_destination_review_admin(review_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Review not found")
     return {"message": "Deleted"}
+
+# ============ COMPLAINT MANAGEMENT ============
+
+@router.get("/complaints")
+async def get_all_complaints():
+    db = await get_database()
+    complaints = await db.complaints.find().sort("created_at", -1).to_list(length=500)
+    for c in complaints:
+        c["id"] = str(c["_id"])
+        del c["_id"]
+    return {"complaints": complaints}
+
+@router.put("/complaint/{complaint_id}/action")
+async def take_complaint_action(complaint_id: str, data: dict):
+    """
+    Action can be: 'warn', 'block_week', 'permanent_block', 'dismiss'
+    """
+    db = await get_database()
+    action = data.get("action")
+    admin_note = data.get("admin_note", "")
+    
+    complaint = await db.complaints.find_one({"_id": ObjectId(complaint_id)})
+    if not complaint:
+        raise HTTPException(status_code=404, detail="Complaint not found")
+        
+    guide_id = complaint["guide_id"]
+    guide = await db.guides.find_one({"_id": ObjectId(guide_id)})
+    if not guide:
+        raise HTTPException(status_code=404, detail="Guide not found")
+        
+    now = datetime.now(timezone.utc)
+    guide_update = {"$inc": {"report_count": 1}} if action != 'dismiss' else {}
+    complaint_status = "pending"
+    
+    if action == "warn":
+        complaint_status = "warned"
+        await create_and_send_notification(
+            recipient_email=guide["email"],
+            recipient_type="guide",
+            notif_type=NotificationType.SYSTEM,
+            title="Account Warning!",
+            message=f"You have received a formal warning due to a traveler report: {admin_note}",
+            link="/guide/profile"
+        )
+    
+    elif action == "block_week":
+        complaint_status = "blocked"
+        blocked_until = now + timedelta(days=7)
+        guide_update["$set"] = {
+            "is_blocked": True,
+            "blocked_until": blocked_until
+        }
+        await create_and_send_notification(
+            recipient_email=guide["email"],
+            recipient_type="guide",
+            notif_type=NotificationType.SYSTEM,
+            title="Account Blocked (1 Week)",
+            message=f"Your account has been suspended for 7 days. Reason: {admin_note}",
+            link="/login"
+        )
+        
+    elif action == "permanent_block":
+        complaint_status = "permanent"
+        guide_update["$set"] = {
+            "is_permanently_blocked": True,
+            "is_active": False
+        }
+        await create_and_send_notification(
+            recipient_email=guide["email"],
+            recipient_type="guide",
+            notif_type=NotificationType.SYSTEM,
+            title="Account Permanently Blocked",
+            message=f"Your account has been permanently deactivated due to multiple policy violations. CNIC: {guide.get('cnic_number')}",
+            link="/contact"
+        )
+        
+    elif action == "dismiss":
+        complaint_status = "dismissed"
+    
+    # Update Guide
+    if guide_update:
+        await db.guides.update_one({"_id": ObjectId(guide_id)}, guide_update)
+        
+    # Update complaint status
+    status_map = {
+        "warn": "warned",
+        "block_week": "blocked",
+        "permanent_block": "permanent",
+        "dismiss": "dismissed"
+    }
+    
+    complaint_status = status_map.get(action, action)
+    await db.complaints.update_one(
+        {"_id": ObjectId(complaint_id)},
+        {"$set": {
+            "status": complaint_status,
+            "admin_note": admin_note,
+            "resolved_at": now
+        }}
+    )
+    
+    return {"message": f"Action '{action}' taken successfully", "status": complaint_status}

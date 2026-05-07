@@ -4,7 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
     User, Calendar, MapPin, Clock, CheckCircle, XCircle, Loader2,
-    AlertCircle, ChevronRight, Mail, Zap, Compass, Trash2, Star, MessageSquare, X, Shield, ChevronDown
+    AlertCircle, ChevronRight, Mail, Zap, Compass, Trash2, Star, MessageSquare, X, Shield, ChevronDown, Flag, AlertTriangle
 } from 'lucide-react';
 
 const API_BASE_URL = "http://localhost:8000";
@@ -111,6 +111,109 @@ const ReviewForm = ({ booking, onClose, onSubmitted }) => {
     );
 };
 
+const ReportForm = ({ booking, onClose }) => {
+    const { user } = useAuth();
+    const [reason, setReason] = useState("");
+    const [description, setDescription] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/complaints/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    guide_id: booking?.guide_id,
+                    guide_name: booking?.guide_name,
+                    destination: booking?.destination,
+                    traveler_email: user?.email,
+                    traveler_name: user?.name,
+                    reason: reason,
+                    description: description
+                })
+            });
+            if (response.ok) {
+                alert('Complaint submitted to admin successfully. They will review it soon.');
+                onClose();
+            } else {
+                const data = await response.json();
+                alert(data.detail || 'Failed to submit report');
+            }
+        } catch (err) {
+            alert('Error submitting report');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-red-900/20 backdrop-blur-md flex items-center justify-center p-4"
+        >
+            <motion.div
+                initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
+                className="bg-white w-full max-w-lg rounded-[40px] p-8 sm:p-10 shadow-2xl relative overflow-hidden"
+            >
+                <div className="absolute top-0 left-0 w-full h-2 bg-red-500" />
+                <button onClick={onClose} className="absolute top-6 right-6 p-2 text-stone-300 hover:text-stone-900 transition-colors">
+                    <X className="w-6 h-6" />
+                </button>
+
+                <div className="text-center mb-8">
+                    <div className="w-16 h-16 bg-red-100 rounded-3xl flex items-center justify-center mx-auto mb-4 border border-red-200">
+                        <AlertTriangle className="w-8 h-8 text-red-600" />
+                    </div>
+                    <h2 className="text-3xl font-black text-stone-900 tracking-tight">Report Guide</h2>
+                    <p className="text-stone-500 font-bold uppercase text-[10px] tracking-widest mt-1">Submit your complaint about {booking?.guide_name}</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Reason for Complaint</label>
+                        <select 
+                            required
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-100 rounded-2xl p-4 text-sm font-bold focus:border-red-500 outline-none transition-all"
+                        >
+                            <option value="">Select a reason</option>
+                            <option value="Unprofessional Behavior">Unprofessional Behavior</option>
+                            <option value="Late Arrival">Late Arrival</option>
+                            <option value="Incorrect Information">Incorrect Information</option>
+                            <option value="Safety Concerns">Safety Concerns</option>
+                            <option value="Overcharging">Overcharging</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Explain the Issue</label>
+                        <textarea
+                            required rows="4" value={description} onChange={(e) => setDescription(e.target.value)}
+                            className="w-full bg-stone-50 border border-stone-100 rounded-3xl p-5 text-sm font-medium focus:border-red-500 outline-none transition-all resize-none shadow-inner"
+                            placeholder="Provide details about what happened at the location..."
+                        ></textarea>
+                    </div>
+
+                    <button
+                        disabled={isSubmitting}
+                        className="w-full py-5 rounded-2xl flex items-center justify-center gap-3 text-lg font-black bg-red-600 text-white hover:bg-red-700 transition-all shadow-lg shadow-red-200 active:scale-95 disabled:opacity-50"
+                    >
+                        {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <><Flag className="w-6 h-6" /> Submit Report</>}
+                    </button>
+                    <p className="text-[9px] text-stone-400 text-center font-bold px-4 leading-relaxed">
+                        Note: False reports can lead to account suspension. Please provide honest feedback.
+                    </p>
+                </form>
+            </motion.div>
+        </motion.div>
+    );
+};
+
+
 const TravelerDashboard = () => {
     const { user, isAuthenticated, loading: authLoading } = useAuth();
     const navigate = useNavigate();
@@ -120,6 +223,7 @@ const TravelerDashboard = () => {
     const [supportMessages, setSupportMessages] = useState([]);
     const [expandedBooking, setExpandedBooking] = useState(null);
     const [reviewingBooking, setReviewingBooking] = useState(null);
+    const [reportingBooking, setReportingBooking] = useState(null);
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) { navigate('/traveler-signin'); return; }
@@ -263,6 +367,15 @@ const TravelerDashboard = () => {
                                                     </button>
                                                 )}
 
+                                                <button 
+                                                    onClick={() => setReportingBooking(b)} 
+                                                    className="px-4 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center gap-2"
+                                                    title="Report Guide"
+                                                >
+                                                    <Flag className="w-3.5 h-3.5" />
+                                                    Report
+                                                </button>
+
                                                 {((b.status || '').toLowerCase() === 'pending' || (b.status || '').toLowerCase() === 'confirmed') && (
                                                     <button onClick={() => handleDeleteBooking(b.id)} className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all">
                                                         <Trash2 className="w-4 h-4" />
@@ -363,6 +476,16 @@ const TravelerDashboard = () => {
                         booking={reviewingBooking}
                         onClose={() => setReviewingBooking(null)}
                         onSubmitted={(newRev) => setMyReviews(prev => [...prev, newRev])}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* Report Modal */}
+            <AnimatePresence>
+                {reportingBooking && (
+                    <ReportForm
+                        booking={reportingBooking}
+                        onClose={() => setReportingBooking(null)}
                     />
                 )}
             </AnimatePresence>

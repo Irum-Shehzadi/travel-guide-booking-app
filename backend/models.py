@@ -91,6 +91,11 @@ class GuideInDB(BaseModel):
     is_active: bool = True
     rating: float = 0.0
     total_bookings: int = 0
+    # Reporting & Blocking Fields
+    report_count: int = 0
+    is_blocked: bool = False
+    blocked_until: Optional[datetime] = None
+    is_permanently_blocked: bool = False
 
 # Booking Status 
 class BookingStatus(str, Enum):
@@ -163,6 +168,39 @@ class ReviewInDB(BaseModel):
     replied_at: Optional[datetime] = None
     booking_id: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+# ============ Complaint Models ============
+class ComplaintStatus(str, Enum):
+    PENDING   = "pending"    # Traveler ne submit ki, admin ne dekha nahi
+    WARNED    = "warned"     # Admin ne guide ko warn kar diya
+    BLOCKED   = "blocked"    # Admin ne guide ko 1 week block kiya
+    PERMANENT = "permanent"  # Admin ne permanently block kiya
+    DISMISSED = "dismissed"  # Admin ne reject kar diya
+
+class ComplaintCreate(BaseModel):
+    guide_id: str
+    guide_name: str
+    traveler_email: str
+    traveler_name: str
+    destination: str           # Kahan ka experience kharab tha
+    reason: str                # Short reason
+    description: str           # Detailed description
+
+class ComplaintInDB(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True, populate_by_name=True)
+
+    id: Optional[PyObjectId] = Field(default=None, alias="_id")
+    guide_id: str
+    guide_name: str
+    traveler_email: str
+    traveler_name: str
+    destination: str
+    reason: str
+    description: str
+    status: ComplaintStatus = ComplaintStatus.PENDING
+    admin_note: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    resolved_at: Optional[datetime] = None
 
 # Destination Review Models
 class DestinationReviewCreate(BaseModel):

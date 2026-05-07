@@ -3,7 +3,7 @@ from models import GuideRegistration, GuideLogin
 from database import get_database
 from typing import List
 from utils import get_password_hash, verify_password, create_access_token
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 import os
 from models import NotificationType
 from routers.notification import create_and_send_notification
@@ -16,8 +16,20 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 async def guide_registration(guide: GuideRegistration):
     """Register a new guide"""
     db = await get_database()
-    
-   
+
+    # ---- CNIC Blacklist Check ----
+    # Agar is CNIC se pehle koi permanently block hua hai to registration band
+    blocked_cnic = await db.guides.find_one({
+        "cnic_number": guide.cnic_number,
+        "is_permanently_blocked": True
+    })
+    if blocked_cnic:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your CNIC is blacklisted due to permanent suspension. You cannot register again."
+        )
+
+    # ---- Duplicate Email Check ----
     existing_guide = await db.guides.find_one({"email": guide.email})
     if existing_guide:
         raise HTTPException(
@@ -46,7 +58,12 @@ async def guide_registration(guide: GuideRegistration):
         "is_active": True,
         "rating": 0.0,
         "total_bookings": 0,
-        "hashed_password": hashed_password
+        "hashed_password": hashed_password,
+        # Reporting & Blocking
+        "report_count": 0,
+        "is_blocked": False,
+        "blocked_until": None,
+        "is_permanently_blocked": False
     }
     
   
@@ -103,7 +120,36 @@ async def guide_login(guide: GuideLogin):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
         )
-    
+
+    # ---- Permanent Block Check ----
+    if guide_doc.get("is_permanently_blocked", False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been permanently suspended due to multiple complaints and policy violations."
+        )
+
+    # ---- Temporary Block Check ----
+    if guide_doc.get("is_blocked", False):
+        blocked_until = guide_doc.get("blocked_until")
+        now = datetime.now(timezone.utc)
+        # Make blocked_until timezone-aware if needed
+        if blocked_until and blocked_until.tzinfo is None:
+            blocked_until = blocked_until.replace(tzinfo=timezone.utc)
+        if blocked_until and now < blocked_until:
+            remaining = blocked_until - now
+            days = remaining.days
+            hours = remaining.seconds // 3600
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Your account is temporarily suspended until {blocked_until.strftime('%Y-%m-%d %H:%M')}. Please try again after the suspension period."
+            )
+        else:
+            # Block period khatam ho gaya, auto-unblock
+            await db.guides.update_one(
+                {"_id": guide_doc["_id"]},
+                {"$set": {"is_blocked": False, "blocked_until": None}}
+            )
+
     if not guide_doc.get("is_active", True):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -225,7 +271,9 @@ async def get_guide_by_email(email: str):
             "profile_photo": guide.get("profile_photo"),
             "rating": guide.get("rating", 0.0),
             "total_bookings": guide.get("total_bookings", 0),
-            "is_verified": guide.get("is_verified", False)
+            "is_verified": guide.get("is_verified", False),
+            "report_count": guide.get("report_count", 0),
+            "is_blocked": guide.get("is_blocked", False)
         }
     }
 

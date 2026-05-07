@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import connect_to_mongo, close_mongo_connection
-from routers import traveler, guide, booking, review, contact, upload, weather, places, admin, notification, chat
+from routers import traveler, guide, booking, review, contact, upload, weather, places, admin, notification, chat, complaint
 
 from contextlib import asynccontextmanager
 
@@ -74,6 +74,7 @@ app.include_router(places.router)
 app.include_router(admin.router)
 app.include_router(notification.router)
 app.include_router(chat.router)
+app.include_router(complaint.router)
 
 # Root endpoint
 @app.get("/")

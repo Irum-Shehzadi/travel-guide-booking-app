@@ -21,6 +21,7 @@ import GuideDetail from "./Components/Pages/Guide/GuideDetail";
 // Admin imports
 import AdminLogin from "./Components/Pages/Admin/AdminLogin";
 import AdminDashboard from "./Components/Pages/Admin/AdminDashboard";
+import AdminComplaints from "./Components/Pages/Admin/AdminComplaints";
 
 function App() {
   const location = useLocation();
@@ -52,6 +53,7 @@ function App() {
 
         {/* Admin */}
         <Route path="/admin/messages" element={<ProtectedRoute><AdminMessages /></ProtectedRoute>} />
+        <Route path="/admin/complaints" element={<ProtectedRoute><AdminComplaints /></ProtectedRoute>} />
 
         {/* Guide Detail - Viewable by anyone/travelers */}
         <Route path="/guide/:id" element={<GuideDetail />} />

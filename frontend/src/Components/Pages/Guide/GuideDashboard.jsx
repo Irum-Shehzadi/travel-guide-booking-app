@@ -4,7 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import {
     User, Calendar, MapPin, Clock, CheckCircle, XCircle, Loader2,
-    AlertCircle, Mail, Phone, Briefcase, Zap, Shield, ChevronRight, Star, MessageSquare, ChevronDown, ChevronUp
+    AlertCircle, Mail, Phone, Briefcase, Zap, Shield, ChevronRight, Star, MessageSquare, ChevronDown, ChevronUp, AlertTriangle, Flag
 } from 'lucide-react';
 
 const API_BASE_URL = "http://localhost:8000";
@@ -29,6 +29,7 @@ const GuideDashboard = () => {
     const [supportMessages, setSupportMessages] = useState([]);
     const [expandedReview, setExpandedReview] = useState(null);
     const [replyText, setReplyText] = useState({});
+    const [guideData, setGuideData] = useState(null);
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) { navigate('/guide-login'); return; }
@@ -41,17 +42,20 @@ const GuideDashboard = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [bRes, rRes, sRes] = await Promise.all([
+            const [bRes, rRes, sRes, gRes] = await Promise.all([
                 fetch(`${API_BASE_URL}/api/booking/guide-email/${user.email}`),
                 fetch(`${API_BASE_URL}/api/review/guide-email/${user.email}`),
-                fetch(`${API_BASE_URL}/api/contact/user/${user.email}`)
+                fetch(`${API_BASE_URL}/api/contact/user/${user.email}`),
+                fetch(`${API_BASE_URL}/api/guide/email/${user.email}`)
             ]);
             const bData = await bRes.json();
             const rData = await rRes.json();
             const sData = await sRes.json();
+            const gData = await gRes.json();
             setBookings(bData.bookings || []);
             setReviews(rData.reviews || []);
             setSupportMessages(sData.messages || []);
+            setGuideData(gData.guide || null);
         } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
@@ -92,6 +96,45 @@ const GuideDashboard = () => {
     return (
         <div className="min-h-screen bg-aurora pt-24 pb-20">
             <div className="max-w-6xl mx-auto px-4 sm:px-6">
+                
+                {/* DISCIPLINARY WARNING BANNER */}
+                {guideData?.report_count > 0 && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0, y: -20 }}
+                        animate={{ height: 'auto', opacity: 1, y: 0 }}
+                        className="mb-8 overflow-hidden"
+                    >
+                        <div className={`p-6 rounded-[32px] border flex flex-col md:flex-row items-center gap-6 shadow-xl ${
+                            guideData.report_count >= 2 ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'
+                        }`}>
+                            <div className={`w-16 h-16 shrink-0 rounded-2xl flex items-center justify-center ${
+                                guideData.report_count >= 2 ? 'bg-red-600' : 'bg-amber-500'
+                            }`}>
+                                <AlertTriangle className="w-8 h-8 text-white" />
+                            </div>
+                            <div className="flex-1 text-center md:text-left">
+                                <h3 className={`text-xl font-black tracking-tight mb-1 ${
+                                    guideData.report_count >= 2 ? 'text-red-900' : 'text-amber-900'
+                                }`}>
+                                    Account Under Review ({guideData.report_count} Reports)
+                                </h3>
+                                <p className={`text-sm font-bold leading-relaxed ${
+                                    guideData.report_count >= 2 ? 'text-red-700/70' : 'text-amber-700/70'
+                                }`}>
+                                    {guideData.report_count === 1 
+                                        ? "Admin has issued a formal warning based on traveler feedback. Please maintain professional standards." 
+                                        : "Multiple complaints received. Your account is at risk of permanent suspension. Contact support if you have clarifications."}
+                                </p>
+                            </div>
+                            <div className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
+                                guideData.report_count >= 2 ? 'bg-red-600 text-white border-red-600' : 'bg-amber-500 text-white border-amber-500'
+                                }`}>
+                                Action Required
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* Profile Header */}
                 <motion.div
                     initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}

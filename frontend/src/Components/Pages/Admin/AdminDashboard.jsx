@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Users, MapPin, CalendarCheck, Shield, Trash2, CheckCircle, Loader2,
-    UserCheck, BarChart3, Mail, Phone, Search, Zap, Trash, Menu, X, LogOut, ChevronRight, Bell, MessageSquare, Star, Send
+    UserCheck, BarChart3, Mail, Phone, Search, Zap, Trash, Menu, X, LogOut, ChevronRight, Bell, MessageSquare, Star, Send, Flag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import logo from "../../../assets/logo.svg";
 import NotificationDropdown from '../../NotificationDropdown';
+import AdminComplaints from './AdminComplaints';
 
 const API_BASE_URL = "http://localhost:8000";
 
@@ -223,6 +224,7 @@ const AdminDashboard = () => {
         { id: 'destination_reviews', label: 'Dest. Reviews', icon: Star },
         { id: 'guide_reviews', label: 'Guide Reviews', icon: Star },
         { id: 'chats', label: 'Chat Hub', icon: MessageSquare },
+        { id: 'complaints', label: 'Complaints', icon: Flag },
     ];
 
     if (loading) {
@@ -758,6 +760,11 @@ const AdminDashboard = () => {
                                         )}
                                     </div>
                                 </div>
+                            )}
+
+                            {/* COMPLAINTS TAB */}
+                            {activeTab === 'complaints' && (
+                                <AdminComplaints />
                             )}
 
                         </motion.div>
