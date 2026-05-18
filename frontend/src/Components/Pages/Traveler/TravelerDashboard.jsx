@@ -8,7 +8,7 @@ import {
     AlertCircle, ChevronRight, Mail, Zap, Compass, Trash2, Star, MessageSquare, X, Shield, ChevronDown, Flag, AlertTriangle
 } from 'lucide-react';
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://92.4.67.243:8000";
 
 const containerVariants = {
     hidden: { opacity: 0 },

@@ -13,7 +13,7 @@ const WeatherWidget = ({ cityName }) => {
         setError(null);
 
         try {
-            const response = await fetch(`http://localhost:8000/api/weather/${encodeURIComponent(cityName)}`);
+            const response = await fetch(`http://92.4.67.243:8000/api/weather/${encodeURIComponent(cityName)}`);
 
             if (!response.ok) {
                 throw new Error('Weather data not available');

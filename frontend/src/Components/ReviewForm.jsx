@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Star, Send, Loader2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://92.4.67.243:8000";
 
 const ReviewForm = ({ booking, isOpen, onClose, onSuccess }) => {
     const { user } = useAuth();

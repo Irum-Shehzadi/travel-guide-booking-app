@@ -10,7 +10,7 @@ import logo from "../../../assets/logo.svg";
 import NotificationDropdown from '../../NotificationDropdown';
 import AdminComplaints from './AdminComplaints';
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://92.4.67.243:8000";
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
@@ -66,7 +66,7 @@ const AdminDashboard = () => {
     }, [chatHistory]);
 
     const connectChatWS = () => {
-        const socket = new WebSocket(`ws://localhost:8000/api/chat/ws/admin`);
+        const socket = new WebSocket(`ws://92.4.67.243:8000/api/chat/ws/admin`);
         socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (selectedChat && (data.sender_email === selectedChat.email || data.receiver_email === selectedChat.email)) {

@@ -31,7 +31,7 @@ const TravelerSign = () => {
         password: '***' // Don't log actual password
       });
 
-      const response = await fetch('http://localhost:8000/api/traveler/signup', {
+      const response = await fetch('http://92.4.67.243:8000/api/traveler/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ const TravelerSign = () => {
     try {
       console.log('Sending login request with email:', formData.email);
 
-      const response = await fetch('http://localhost:8000/api/traveler/login', {
+      const response = await fetch('http://92.4.67.243:8000/api/traveler/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

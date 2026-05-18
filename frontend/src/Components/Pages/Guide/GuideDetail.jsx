@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Star, Calendar, Shield, Award, Clock, Mail, Phone, ArrowLeft, Zap, MessageSquare, Compass, Globe, ChevronDown } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://92.4.67.243:8000";
 
 const GuideDetail = () => {
     const { id } = useParams();

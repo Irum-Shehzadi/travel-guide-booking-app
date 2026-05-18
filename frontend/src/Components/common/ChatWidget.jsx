@@ -3,8 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, X, Send, User, Shield, Loader2, Minus, Maximize2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const API_BASE_URL = "http://localhost:8000";
-const WS_BASE_URL = "ws://localhost:8000";
+const API_BASE_URL = "http://92.4.67.243:8000";
+const WS_BASE_URL = "ws://92.4.67.243:8000";
 
 const ChatWidget = () => {
     const { user, isAuthenticated } = useAuth();
