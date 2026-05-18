@@ -24,7 +24,7 @@ const GuideLogin = () => {
         setError('');
 
         try {
-            const response = await fetch('http://92.4.67.243:8000/api/guide/login', {
+            const response = await fetch('https://travel-guide-fyp.duckdns.org/api/guide/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

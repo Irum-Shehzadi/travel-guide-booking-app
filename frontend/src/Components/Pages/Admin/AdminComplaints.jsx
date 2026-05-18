@@ -9,7 +9,7 @@ import {
     Flag, Trash2, Ban, UserCheck
 } from 'lucide-react';
 
-const API_BASE_URL = "http://92.4.67.243:8000";
+const API_BASE_URL = "https://travel-guide-fyp.duckdns.org";
 
 const AdminComplaints = () => {
     const [complaints, setComplaints] = useState([]);

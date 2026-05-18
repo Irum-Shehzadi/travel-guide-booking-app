@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { X, Calendar, MapPin, Clock, Phone, MessageSquare, Send, Loader2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const API_BASE_URL = "http://92.4.67.243:8000";
+const API_BASE_URL = "https://travel-guide-fyp.duckdns.org";
 
 const BookingForm = ({ guide, isOpen, onClose, onSuccess }) => {
     const { user, isAuthenticated } = useAuth();

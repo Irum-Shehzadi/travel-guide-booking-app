@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import BookingForm from "../../BookingForm";
 
-const API_BASE_URL = "http://92.4.67.243:8000";
+const API_BASE_URL = "https://travel-guide-fyp.duckdns.org";
 
 const containerVariants = {
   hidden: { opacity: 0 },

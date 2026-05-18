@@ -3,7 +3,7 @@ import { X, Star, Send, Loader2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const API_BASE_URL = "http://92.4.67.243:8000";
+const API_BASE_URL = "https://travel-guide-fyp.duckdns.org";
 
 const DestinationReviewForm = ({ cityName, isOpen, onClose, onSuccess }) => {
     const { user, isAuthenticated } = useAuth();

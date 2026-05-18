@@ -3,8 +3,8 @@ import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext(null);
 
-const API_BASE_URL = "http://92.4.67.243:8000";
-const WS_BASE_URL = "ws://92.4.67.243:8000";
+const API_BASE_URL = "https://travel-guide-fyp.duckdns.org";
+const WS_BASE_URL = "wss://travel-guide-fyp.duckdns.org";
 
 export const NotificationProvider = ({ children }) => {
     const { user, isAuthenticated } = useAuth();

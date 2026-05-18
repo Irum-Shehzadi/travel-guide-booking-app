@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { User, Mail, Phone, MapPin, Briefcase, FileText, Upload, Award, CheckCircle, ArrowRight, Camera, Shield, Star, Clock, Lock, Loader2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const API_BASE_URL = "http://92.4.67.243:8000";
+const API_BASE_URL = "https://travel-guide-fyp.duckdns.org";
 
 const GuideRegistration = () => {
   const [step, setStep] = useState(1);
@@ -201,7 +201,7 @@ const GuideRegistration = () => {
     setError('');
 
     try {
-      const response = await fetch('http://92.4.67.243:8000/api/guide/register', {
+      const response = await fetch('https://travel-guide-fyp.duckdns.org/api/guide/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,7 +261,7 @@ const GuideRegistration = () => {
       }
     } catch (err) {
       console.error('Error:', err);
-      setError('Network error. Please check if backend is running on http://92.4.67.243:8000');
+      setError('Network error. Please check if backend is running on https://travel-guide-fyp.duckdns.org');
     } finally {
       setLoading(false);
     }

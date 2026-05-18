@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Star, User, MapPin, Calendar, Loader2, MessageSquare, Award } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
-const API_BASE_URL = "http://92.4.67.243:8000";
+const API_BASE_URL = "https://travel-guide-fyp.duckdns.org";
 
 const Review = () => {
   const { user, isAuthenticated } = useAuth();

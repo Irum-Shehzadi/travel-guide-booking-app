@@ -67,7 +67,7 @@ const Navbar = () => {
                   <div className="w-6 h-6 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 flex items-center justify-center text-[10px] text-white overflow-hidden flex-shrink-0">
                     {user?.profile_photo ? (
                       <img
-                        src={`http://92.4.67.243:8000${user.profile_photo}`}
+                        src={`https://travel-guide-fyp.duckdns.org${user.profile_photo}`}
                         alt={user.name}
                         className="w-full h-full object-cover"
                       />
@@ -184,7 +184,7 @@ const Navbar = () => {
                   <div className="flex items-center gap-3 px-4 py-3 bg-white border border-stone-200 rounded-xl shadow-sm">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white overflow-hidden flex-shrink-0">
                       {user?.profile_photo ? (
-                        <img src={`http://92.4.67.243:8000${user.profile_photo}`} alt={user.name} className="w-full h-full object-cover" />
+                        <img src={`https://travel-guide-fyp.duckdns.org${user.profile_photo}`} alt={user.name} className="w-full h-full object-cover" />
                       ) : user?.name?.charAt(0)}
                     </div>
                     <div className="min-w-0">

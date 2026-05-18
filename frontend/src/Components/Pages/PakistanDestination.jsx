@@ -86,7 +86,7 @@ export default function PakistanDestinations() {
   const fetchCityGuides = async (cityName) => {
     setGuidesLoading(true);
     try {
-      const response = await fetch(`http://92.4.67.243:8000/api/guide/search/city/${cityName}`);
+      const response = await fetch(`https://travel-guide-fyp.duckdns.org/api/guide/search/city/${cityName}`);
       const data = await response.json();
       setCityGuides(data.guides || []);
     } catch (err) {
@@ -99,7 +99,7 @@ export default function PakistanDestinations() {
   const fetchCityReviews = async (cityName) => {
     setReviewsLoading(true);
     try {
-      const response = await fetch(`http://92.4.67.243:8000/api/review/destination/${cityName}`);
+      const response = await fetch(`https://travel-guide-fyp.duckdns.org/api/review/destination/${cityName}`);
       const data = await response.json();
       setCityReviews(data.reviews || []);
     } catch (err) {
@@ -450,7 +450,7 @@ export default function PakistanDestinations() {
                         >
                           <div className="h-48 sm:h-56 bg-stone-100 relative flex items-center justify-center overflow-hidden">
                             {g.profile_photo ? (
-                              <img src={`http://92.4.67.243:8000${g.profile_photo}`} alt={g.fullName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                              <img src={`https://travel-guide-fyp.duckdns.org${g.profile_photo}`} alt={g.fullName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                             ) : (
                               <span className="text-6xl sm:text-8xl font-black text-stone-200">{g.fullName.charAt(0)}</span>
                             )}
