@@ -180,7 +180,7 @@ async def get_all_guides():
     """Get all verified guides"""
     db = await get_database()
     
-    guides = await db.guides.find({"is_active": True}).to_list(length=100)
+    guides = await db.guides.find({"is_active": True, "is_verified": True}).to_list(length=100)
     
     guides_list = []
     for guide in guides:

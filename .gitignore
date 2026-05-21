@@ -30,3 +30,22 @@ lerna-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+irum/
+.env
+
+# Sensitive backend files
+backend/.env
+backend/check_db.py
+backend/validation_error.json
+backend/uploads/
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
