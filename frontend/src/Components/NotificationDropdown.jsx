@@ -54,10 +54,29 @@ export default function NotificationDropdown() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Map notification links to admin dashboard tabs
+    const adminTabMap = {
+        '/admin/guides': 'guides',
+        '/admin/bookings': 'bookings',
+        '/admin/complaints': 'complaints',
+        '/admin/chats': 'chats',
+        '/admin/travelers': 'travelers',
+        '/admin/reviews': 'guide_reviews',
+        '/admin/messages': 'chats',
+    };
+
     const handleNotifClick = (notif) => {
         if (!notif.is_read) markAsRead(notif.id);
         if (notif.link) {
-            navigate(notif.link);
+            // Check if it's an admin dashboard tab link
+            const tabId = adminTabMap[notif.link];
+            if (tabId) {
+                navigate(`/admin-dashboard?tab=${tabId}`);
+            } else if (notif.link === '/admin-dashboard') {
+                navigate('/admin-dashboard');
+            } else {
+                navigate(notif.link);
+            }
             setOpen(false);
         }
     };

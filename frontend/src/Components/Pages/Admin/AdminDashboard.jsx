@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import logo from "../../../assets/logo.svg";
 import NotificationDropdown from '../../NotificationDropdown';
 import AdminComplaints from './AdminComplaints';
@@ -15,8 +15,11 @@ const API_BASE_URL = "http://localhost:8000";
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState(() => {
+        return searchParams.get('tab') || 'overview';
+    });
     const [stats, setStats] = useState(null);
     const [travelers, setTravelers] = useState([]);
     const [guides, setGuides] = useState([]);
@@ -36,6 +39,17 @@ const AdminDashboard = () => {
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [replyText, setReplyText] = useState('');
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    // Sync tab from URL query parameter (for notification click navigation)
+    useEffect(() => {
+        const tabFromUrl = searchParams.get('tab');
+        if (tabFromUrl && tabFromUrl !== activeTab) {
+            setActiveTab(tabFromUrl);
+            // Clean up the URL param after applying
+            searchParams.delete('tab');
+            setSearchParams(searchParams, { replace: true });
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         fetchStats();

@@ -4,7 +4,7 @@ from typing import Optional
 from jose import JWTError, jwt
 import os
 from dotenv import load_dotenv
-from passlib.context import CryptContext
+import bcrypt
 
 load_dotenv()
 
@@ -12,8 +12,6 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY", "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash (supports both new bcrypt and legacy sha256)"""
@@ -23,12 +21,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         legacy_hash = hashlib.sha256((plain_password + salt).encode()).hexdigest()
         return legacy_hash == hashed_password
         
-    # Verify using secure Bcrypt
-    return pwd_context.verify(plain_password, hashed_password)
+    # Verify using secure Bcrypt directly
+    return bcrypt.checkpw(
+        plain_password.encode("utf-8"),
+        hashed_password.encode("utf-8")
+    )
 
 def get_password_hash(password: str) -> str:
     """Hash a password securely using Bcrypt"""
-    return pwd_context.hash(password)
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Create JWT access token"""

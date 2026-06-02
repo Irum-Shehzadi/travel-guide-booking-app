@@ -6,6 +6,10 @@ import cloudinary.uploader
 
 router = APIRouter(prefix="/api/upload", tags=["Upload"])
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Configure Cloudinary using environment variables
 cloudinary.config( 
     cloud_name = os.getenv("CLOUDINARY_CLOUD_NAME", "demo"), 
