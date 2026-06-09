@@ -20,7 +20,7 @@ const itemVariants = {
 };
 
 const GuideDashboard = () => {
-    const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
+    const { user, isAuthenticated, loading: authLoading, logout, updateUser } = useAuth();
     const navigate = useNavigate();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -55,7 +55,12 @@ const GuideDashboard = () => {
             setBookings(bData.bookings || []);
             setReviews(rData.reviews || []);
             setSupportMessages(sData.messages || []);
-            setGuideData(gData.guide || null);
+            const guide = gData.guide || null;
+            setGuideData(guide);
+            // Navbar circle mein profile photo dikhane ke liye
+            if (guide?.profile_photo) {
+                updateUser({ profile_photo: guide.profile_photo });
+            }
         } catch (err) { console.error(err); } finally { setLoading(false); }
     };
 
@@ -141,16 +146,85 @@ const GuideDashboard = () => {
                     className="glass-panel p-8 rounded-[40px] border-emerald-500/20 mb-10 bg-white/60 shadow-xl"
                 >
                     <div className="flex flex-col md:flex-row items-center gap-8">
-                        <div className="w-20 h-20 rounded-3xl bg-emerald-600 flex items-center justify-center text-3xl font-black text-white shadow-lg">
-                            {user?.name?.charAt(0)}
+                        {/* Profile Photo / Initials */}
+                        <div className="shrink-0">
+                            {guideData?.profile_photo ? (
+                                <img
+                                    src={guideData.profile_photo.startsWith('/api')
+                                        ? `http://localhost:8000${guideData.profile_photo}`
+                                        : guideData.profile_photo
+                                    }
+                                    alt={guideData.fullName}
+                                    className="w-24 h-24 rounded-3xl object-cover shadow-lg border-4 border-emerald-100"
+                                    onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
+                                />
+                            ) : null}
+                            <div
+                                style={{ display: guideData?.profile_photo ? 'none' : 'flex' }}
+                                className="w-24 h-24 rounded-3xl bg-emerald-600 items-center justify-center text-4xl font-black text-white shadow-lg"
+                            >
+                                {user?.name?.charAt(0)}
+                            </div>
                         </div>
-                        <div className="text-center md:text-left flex-1">
-                            <h1 className="text-3xl font-black text-stone-900 mb-1">Guide Dashboard</h1>
-                            <p className="text-stone-500 font-bold flex items-center justify-center md:justify-start gap-2">
-                                <Mail className="w-4 h-4 text-emerald-600" /> {user?.email}
-                            </p>
+
+                        {/* Info */}
+                        <div className="text-center md:text-left flex-1 space-y-2">
+                            <h1 className="text-3xl font-black text-stone-900 tracking-tight">
+                                {guideData?.fullName || user?.name}
+                            </h1>
+                            <div className="flex flex-wrap justify-center md:justify-start gap-4 text-[11px] font-black uppercase tracking-widest text-stone-500">
+                                <span className="flex items-center gap-1.5">
+                                    <Mail className="w-3.5 h-3.5 text-emerald-500" />
+                                    {user?.email}
+                                </span>
+                                {guideData?.phone && (
+                                    <span className="flex items-center gap-1.5">
+                                        <Phone className="w-3.5 h-3.5 text-emerald-500" />
+                                        {guideData.phone}
+                                    </span>
+                                )}
+                                {guideData?.city && (
+                                    <span className="flex items-center gap-1.5">
+                                        <MapPin className="w-3.5 h-3.5 text-cyan-500" />
+                                        {guideData.city}
+                                    </span>
+                                )}
+                                {guideData?.experience && (
+                                    <span className="flex items-center gap-1.5">
+                                        <Briefcase className="w-3.5 h-3.5 text-amber-500" />
+                                        {guideData.experience} yrs experience
+                                    </span>
+                                )}
+                                {guideData?.rating > 0 && (
+                                    <span className="flex items-center gap-1.5">
+                                        <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                                        {guideData.rating?.toFixed(1)} rating
+                                    </span>
+                                )}
+                            </div>
+                            {/* Languages & Specializations */}
+                            {(guideData?.languages?.length > 0 || guideData?.specializations?.length > 0) && (
+                                <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-1">
+                                    {guideData?.languages?.slice(0, 3).map((lang, i) => (
+                                        <span key={i} className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                                            {lang}
+                                        </span>
+                                    ))}
+                                    {guideData?.specializations?.slice(0, 2).map((spec, i) => (
+                                        <span key={i} className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-purple-100">
+                                            {spec}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            {guideData?.about && (
+                                <p className="text-stone-500 text-sm font-medium leading-relaxed max-w-lg pt-1 line-clamp-2">
+                                    {guideData.about}
+                                </p>
+                            )}
                         </div>
-                        <button onClick={logout} className="px-6 py-3 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
+
+                        <button onClick={logout} className="shrink-0 px-6 py-3 bg-red-50 text-red-500 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all">
                             Log Out
                         </button>
                     </div>

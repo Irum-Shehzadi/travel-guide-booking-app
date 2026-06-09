@@ -128,8 +128,20 @@ const BookingForm = ({ guide, isOpen, onClose, onSuccess }) => {
 
                         {/* Guide Info Card */}
                         <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-4">
-                            <div className="w-16 h-16 bg-linear-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                                {guide.fullName?.charAt(0)}
+                            <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center text-white text-2xl font-bold bg-linear-to-br from-blue-400 to-purple-500 flex-shrink-0">
+                                {guide.profile_photo ? (
+                                    <img
+                                        src={guide.profile_photo.startsWith('/api') || guide.profile_photo.startsWith('/uploads')
+                                            ? `http://localhost:8000${guide.profile_photo}`
+                                            : guide.profile_photo
+                                        }
+                                        alt={guide.fullName}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => { e.target.style.display = 'none'; e.target.parentElement.innerText = guide.fullName?.charAt(0); }}
+                                    />
+                                ) : (
+                                    guide.fullName?.charAt(0)
+                                )}
                             </div>
                             <div>
                                 <h3 className="font-bold text-gray-800">{guide.fullName}</h3>
