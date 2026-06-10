@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, ArrowLeft, Mountain, Building2, Palmtree, Trees, Waves, Search, Star, Clock, ChevronRight, Loader2, Navigation, Zap, Calendar, Compass, MessageSquare, User } from 'lucide-react';
+import { MapPin, ArrowLeft, Mountain, Building2, Palmtree, Trees, Waves, Search, Star, Clock, ChevronRight, Loader2, Navigation, Zap, Calendar, Compass, MessageSquare, User, AlertCircle } from 'lucide-react';
 import { provincesData, getAllCities, getFeaturedDestinations, searchDestinations } from '../../data/destinations';
 import WeatherWidget from '../common/WeatherWidget';
 import { searchPlaces } from '../../api/places';
 import PlaceCard from '../PlaceCard';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DestinationReviewForm from '../DestinationReviewForm';
+import BookingForm from '../BookingForm';
 
 const iconMap = {
   punjab: Building2,
@@ -53,6 +54,32 @@ export default function PakistanDestinations() {
   // Live results state (for main search)
   const [liveResults, setLiveResults] = useState([]);
   const [liveLoading, setLiveLoading] = useState(false);
+
+  // Guide Booking and Reviews Modals States
+  const [selectedGuide, setSelectedGuide] = useState(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showGuideReviewsModal, setShowGuideReviewsModal] = useState(false);
+  const [guideReviewsData, setGuideReviewsData] = useState([]);
+  const [guideReviewsLoading, setGuideReviewsLoading] = useState(false);
+
+  const fetchGuideReviews = async (guideId) => {
+    setGuideReviewsLoading(true);
+    try {
+      const response = await fetch(`http://localhost:8000/api/review/guide/${guideId}`);
+      const data = await response.json();
+      setGuideReviewsData(data.reviews || []);
+      setShowGuideReviewsModal(true);
+    } catch (err) {
+      console.error('Error fetching reviews:', err);
+    } finally {
+      setGuideReviewsLoading(false);
+    }
+  };
+
+  const handleBookNow = (guide) => {
+    setSelectedGuide(guide);
+    setShowBookingModal(true);
+  };
 
   useEffect(() => {
     if (selectedCity) {
@@ -450,7 +477,7 @@ export default function PakistanDestinations() {
                         >
                           <div className="h-48 sm:h-56 bg-stone-100 relative flex items-center justify-center overflow-hidden">
                             {g.profile_photo ? (
-                              <img src={`http://localhost:8000${g.profile_photo}`} alt={g.fullName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                              <img src={g.profile_photo.startsWith('http') ? g.profile_photo : `http://localhost:8000${g.profile_photo}`} alt={g.fullName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                             ) : (
                               <span className="text-6xl sm:text-8xl font-black text-stone-200">{g.fullName.charAt(0)}</span>
                             )}
@@ -461,6 +488,7 @@ export default function PakistanDestinations() {
                           </div>
                           <div className="p-6 sm:p-8">
                             <h3 className="text-xl sm:text-2xl font-black text-stone-900 mb-1 group-hover:text-emerald-700 transition-colors truncate">{g.fullName}</h3>
+                            <p className="text-xs text-emerald-700 font-bold flex items-center gap-1 mb-1"><MapPin className="w-3 h-3" /> {g.city}</p>
                             <p className="text-[10px] sm:text-[11px] text-stone-500 font-bold uppercase tracking-widest mb-4 flex items-center gap-1"><Zap className="w-3 h-3 text-amber-500" /> {g.experience} Years Exp</p>
                             <div className="space-y-4 mb-6 sm:mb-8">
                               <div className="flex flex-wrap gap-2">
@@ -469,12 +497,20 @@ export default function PakistanDestinations() {
                                 ))}
                               </div>
                             </div>
-                            <button
-                              onClick={() => navigate('/guide-booking')}
-                              className="w-full py-3.5 bg-emerald-600 rounded-2xl text-white text-[11px] sm:text-xs font-bold uppercase tracking-widest hover:bg-emerald-700 transition-colors shadow-md hover:shadow-lg"
-                            >
-                              Check Availability
-                            </button>
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                              <button
+                                onClick={() => handleBookNow(g)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-transform hover:-translate-y-1 text-xs font-bold shadow-md hover:shadow-lg uppercase tracking-wider w-full"
+                              >
+                                Book Now <ChevronRight className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => fetchGuideReviews(g.id)}
+                                className="bg-stone-50 border border-stone-200 text-stone-700 hover:bg-stone-100 hover:border-stone-300 py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-transform hover:-translate-y-1 text-[11px] sm:text-xs font-bold uppercase tracking-wider w-full"
+                              >
+                                Reviews <Star className="w-4 h-4 text-amber-500" />
+                              </button>
+                            </div>
                           </div>
                         </motion.div>
                       ))
@@ -492,6 +528,62 @@ export default function PakistanDestinations() {
             onClose={() => setShowReviewForm(false)} 
             onSuccess={() => fetchCityReviews(selectedCity.name)} 
         />
+
+        <BookingForm
+          guide={selectedGuide}
+          isOpen={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
+          onSuccess={() => fetchCityGuides(selectedCity.name)}
+        />
+
+        <AnimatePresence>
+          {showGuideReviewsModal && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowGuideReviewsModal(false)} className="absolute inset-0 bg-stone-900/60 backdrop-blur-md" />
+              <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-2xl bg-white rounded-[32px] sm:rounded-[40px] border border-stone-200 overflow-hidden shadow-2xl">
+                <div className="p-8 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
+                  <div>
+                    <h3 className="text-2xl font-black text-stone-900">Guide Reviews</h3>
+                    <p className="text-stone-500 text-sm font-semibold mt-1">See what other travelers say</p>
+                  </div>
+                  <button onClick={() => setShowGuideReviewsModal(false)} className="p-3 rounded-2xl bg-white border border-stone-200 text-stone-400 hover:text-stone-900 hover:bg-stone-100 shadow-sm transition-colors"><AlertCircle className="rotate-45 w-6 h-6" /></button>
+                </div>
+
+                <div className="p-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                  {guideReviewsLoading ? (
+                    <div className="py-20 flex justify-center"><Loader2 className="w-10 h-10 text-emerald-600 animate-spin" /></div>
+                  ) : guideReviewsData.length > 0 ? (
+                    <div className="space-y-4">
+                      {guideReviewsData.map((r, i) => (
+                        <div key={i} className="p-6 bg-stone-50 rounded-[28px] border border-stone-200 hover:border-emerald-200 transition-colors">
+                          <div className="flex items-center gap-4 mb-4">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-100 border border-emerald-200 flex items-center justify-center text-emerald-700 font-black text-lg">{r.traveler_name.charAt(0)}</div>
+                            <div>
+                              <h4 className="font-bold text-stone-900 text-sm">{r.traveler_name}</h4>
+                              <div className="flex gap-0.5 mt-1">
+                                {[...Array(5)].map((_, idx) => (
+                                  <Star key={idx} className={`w-3.5 h-3.5 ${idx < r.rating ? "text-amber-400 fill-amber-400" : "text-stone-300"}`} />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-stone-600 text-sm leading-relaxed italic font-medium bg-white p-4 rounded-2xl border border-stone-100 shadow-sm">"{r.comment}"</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-20 bg-stone-50 rounded-[32px] border border-stone-100">
+                      <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 border border-stone-200 shadow-sm">
+                        <Star className="w-8 h-8 text-stone-300" />
+                      </div>
+                      <p className="text-stone-500 font-bold text-lg">No reviews for this guide yet.</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </motion.div>
     );
   }
