@@ -37,7 +37,8 @@ const GuideDashboard = () => {
         if (user?.email) {
             fetchData();
         }
-    }, [user, isAuthenticated, authLoading, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.email, isAuthenticated, authLoading, navigate]);
 
     const fetchData = async () => {
         try {
@@ -58,7 +59,7 @@ const GuideDashboard = () => {
             const guide = gData.guide || null;
             setGuideData(guide);
             // Navbar circle mein profile photo dikhane ke liye
-            if (guide?.profile_photo) {
+            if (guide?.profile_photo && user?.profile_photo !== guide.profile_photo) {
                 updateUser({ profile_photo: guide.profile_photo });
             }
         } catch (err) { console.error(err); } finally { setLoading(false); }

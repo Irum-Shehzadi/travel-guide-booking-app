@@ -174,7 +174,7 @@ const ReportForm = ({ booking, onClose }) => {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
                         <label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Reason for Complaint</label>
-                        <select 
+                        <select
                             required
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
@@ -368,8 +368,8 @@ const TravelerDashboard = () => {
                                                     </button>
                                                 )}
 
-                                                <button 
-                                                    onClick={() => setReportingBooking(b)} 
+                                                <button
+                                                    onClick={() => setReportingBooking(b)}
                                                     className="px-4 py-2.5 bg-red-50 text-red-600 border border-red-100 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 hover:text-white transition-all flex items-center gap-2"
                                                     title="Report Guide"
                                                 >
