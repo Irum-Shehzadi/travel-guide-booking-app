@@ -22,20 +22,35 @@ NAMES = [
 
 SURNAMES = ["Khan", "Ali", "Ahmed", "Shah", "Qureshi", "Malik", "Chaudhry", "Raza", "Hussain", "Tariq", "Javed", "Iqbal", "Mahmood", "Nawaz", "Dar", "Baig", "Sheikh", "Siddiqui"]
 
-DUMMY_PROFILE_PHOTOS = [
+MALE_PHOTOS = [
     "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400",
     "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400",
-    "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400",
-    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
     "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
     "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
-    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400",
     "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=400",
-    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
-    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400",
     "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=400"
 ]
+
+FEMALE_PHOTOS = [
+    "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400",
+    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
+    "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
+    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400",
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400"
+]
+
+FEMALE_FIRST_NAMES = {
+    "amina", "ayesha", "bisma", "bushra", "dua", "eshal", "fatima", "ghazala", 
+    "hina", "iqra", "javeria", "kiran", "laiba", "maryam", "nadia", "omaima", 
+    "parveen", "quratulain", "rabia", "sana", "tahira", "tooba", "urooj", 
+    "uzma", "wajiha", "warda", "yusra", "zahra", "zainab", "zoya", "anum", "yasmin"
+}
+
+def get_gender(first_name):
+    if first_name.lower() in FEMALE_FIRST_NAMES:
+        return "female"
+    return "male"
 
 REVIEWS = [
     "Great experience, very knowledgeable guide!",
@@ -82,7 +97,8 @@ async def seed_all_cities():
                 
                 email = f"guide_{city.lower().replace(' ', '_').replace('&', 'and')}_extra_{random.randint(1000,9999)}@example.com"
                 
-                photo = random.choice(DUMMY_PROFILE_PHOTOS)
+                gender = get_gender(first_name)
+                photo = random.choice(FEMALE_PHOTOS) if gender == "female" else random.choice(MALE_PHOTOS)
                 guide_doc = {
                     "fullName": full_name,
                     "email": email,
