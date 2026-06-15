@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
+from fastapi.responses import Response
 from models import PlaceSearchRequest, PlacesSearchResponse, PlaceResult
 import requests
 import os
@@ -14,6 +15,20 @@ router = APIRouter(
 
 SERPER_API_KEY = os.getenv("SERPER_API_KEY")
 SERPER_BASE_URL = "https://google.serper.dev"
+
+
+@router.options("/search")
+async def options_search(request: Request):
+    """Handle CORS preflight for /search"""
+    return Response(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Allow-Credentials": "true",
+        }
+    )
 
 
 @router.post("/search", response_model=PlacesSearchResponse)

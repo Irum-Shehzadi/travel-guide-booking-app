@@ -29,9 +29,9 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "https://travel-guide-booking-app.onrender.com",
-        # TODO: Add your Vercel/Netlify frontend URL here after deployment
         "https://travel-guide-booking-app.vercel.app",
     ],
+    allow_origin_regex="https?://.*",  # Allow all origins matching http/https for local dev flexibilty
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -97,5 +97,21 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
     import os
+    import sys
+    import asyncio
+
+    # Fix: Suppress harmless WinError 10054 (connection reset) spam on Windows
+    if sys.platform == "win32":
+        import asyncio.proactor_events as _pe
+        _orig_call_connection_lost = _pe._ProactorBasePipeTransport._call_connection_lost
+
+        def _patched_call_connection_lost(self, exc):
+            try:
+                _orig_call_connection_lost(self, exc)
+            except ConnectionResetError:
+                pass  # Suppress WinError 10054 — remote host closed connection
+
+        _pe._ProactorBasePipeTransport._call_connection_lost = _patched_call_connection_lost
+
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
