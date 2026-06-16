@@ -28,8 +28,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "https://travel-guide-booking-app.onrender.com",
-        "https://travel-guide-booking-app.vercel.app",
+        
     ],
     allow_origin_regex="https?://.*",  # Allow all origins matching http/https for local dev flexibilty
     allow_credentials=True,
@@ -114,4 +113,4 @@ if __name__ == "__main__":
         _pe._ProactorBasePipeTransport._call_connection_lost = _patched_call_connection_lost
 
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)

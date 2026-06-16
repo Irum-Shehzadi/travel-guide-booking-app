@@ -475,7 +475,7 @@ export default function PakistanDestinations() {
                           key={i} whileHover={{ y: -5 }}
                           className="bg-white rounded-[32px] sm:rounded-[40px] overflow-hidden border border-stone-200 shadow-sm hover:shadow-xl hover:border-emerald-200 transition-all group"
                         >
-                          <div className="h-48 sm:h-56 bg-stone-100 relative flex items-center justify-center overflow-hidden">
+                          <div onClick={() => navigate(`/guide/${g.id}`)} className="h-48 sm:h-56 bg-stone-100 relative flex items-center justify-center overflow-hidden cursor-pointer">
                             {g.profile_photo ? (
                               <img src={g.profile_photo.startsWith('http') ? g.profile_photo : `http://localhost:8000${g.profile_photo}`} alt={g.fullName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                             ) : (
@@ -487,7 +487,7 @@ export default function PakistanDestinations() {
                             </div>
                           </div>
                           <div className="p-6 sm:p-8">
-                            <h3 className="text-xl sm:text-2xl font-black text-stone-900 mb-1 group-hover:text-emerald-700 transition-colors truncate">{g.fullName}</h3>
+                            <h3 onClick={() => navigate(`/guide/${g.id}`)} className="text-xl sm:text-2xl font-black text-stone-900 mb-1 group-hover:text-emerald-700 transition-colors truncate cursor-pointer">{g.fullName}</h3>
                             <p className="text-xs text-emerald-700 font-bold flex items-center gap-1 mb-1"><MapPin className="w-3 h-3" /> {g.city}</p>
                             <p className="text-[10px] sm:text-[11px] text-stone-500 font-bold uppercase tracking-widest mb-4 flex items-center gap-1"><Zap className="w-3 h-3 text-amber-500" /> {g.experience} Years Exp</p>
                             <div className="space-y-4 mb-6 sm:mb-8">

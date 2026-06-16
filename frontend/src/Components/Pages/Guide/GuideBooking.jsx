@@ -121,7 +121,7 @@ const GuideBooking = () => {
           <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredGuides.map((guide) => (
               <motion.div key={guide.id} variants={itemVariants} className="bg-white rounded-[32px] sm:rounded-[40px] overflow-hidden group border border-stone-200 hover:border-emerald-200 transition-all shadow-sm hover:shadow-xl hover:-translate-y-2 flex flex-col">
-                <div className="relative h-72 overflow-hidden bg-stone-100">
+                <div onClick={() => navigate(`/guide/${guide.id}`)} className="relative h-72 overflow-hidden bg-stone-100 cursor-pointer">
                   {guide.profile_photo ? (
                     <img src={guide.profile_photo.startsWith('/api') ? `${API_BASE_URL}${guide.profile_photo}` : guide.profile_photo} alt={guide.fullName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                   ) : (
@@ -144,7 +144,7 @@ const GuideBooking = () => {
 
                 <div className="p-8 flex flex-col flex-1">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-2xl font-black text-stone-900 group-hover:text-emerald-700 transition-colors truncate pr-2">{guide.fullName}</h3>
+                    <h3 onClick={() => navigate(`/guide/${guide.id}`)} className="text-2xl font-black text-stone-900 group-hover:text-emerald-700 transition-colors truncate pr-2 cursor-pointer">{guide.fullName}</h3>
                     <div className="text-amber-600 flex items-center gap-1 text-[9px] font-black uppercase tracking-widest bg-amber-50 px-2 py-1.5 rounded-md border border-amber-100 shrink-0">
                       <Zap className="w-3 h-3" /> {guide.experience} Yrs
                     </div>
