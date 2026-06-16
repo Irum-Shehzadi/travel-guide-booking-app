@@ -155,8 +155,25 @@ const GuideRegistration = () => {
 
   const handleSubmit = async () => {
     // Validation
-    if (!formData.fullName || !formData.email || !formData.phone || !formData.city) {
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.city || !formData.password) {
       setError('Please fill all required fields');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    const phoneRegex = /^(\+92|0)?3[0-9]{9}$/;
+    if (!phoneRegex.test(formData.phone.replace(/[\s-]/g, ''))) {
+      setError('Please enter a valid Pakistani phone number (e.g., 03001234567)');
       return;
     }
 
@@ -273,6 +290,23 @@ const GuideRegistration = () => {
     if (step === 1) {
       if (!formData.fullName || !formData.email || !formData.phone || !formData.city || !formData.about || !formData.password) {
         setError('Please fill all required fields');
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setError('Please enter a valid email address');
+        return;
+      }
+
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters long');
+        return;
+      }
+
+      const phoneRegex = /^(\+92|0)?3[0-9]{9}$/;
+      if (!phoneRegex.test(formData.phone.replace(/[\s-]/g, ''))) {
+        setError('Please enter a valid Pakistani phone number (e.g., 03001234567)');
         return;
       }
     } else if (step === 2) {
@@ -396,7 +430,7 @@ const GuideRegistration = () => {
                     <input
                       type="tel"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/[^0-9+]/g, '') })}
                       onFocus={() => setFocused('phone')}
                       onBlur={() => setFocused('')}
                       placeholder="+92 300 1234567"
@@ -472,7 +506,7 @@ const GuideRegistration = () => {
                   <input
                     type="number"
                     value={formData.experience}
-                    onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, experience: e.target.value.replace(/[^0-9]/g, '') })}
                     onFocus={() => setFocused('experience')}
                     onBlur={() => setFocused('')}
                     placeholder="e.g., 5"
@@ -655,7 +689,16 @@ const GuideRegistration = () => {
                   <input
                     type="text"
                     value={formData.cnic_number}
-                    onChange={(e) => setFormData({ ...formData, cnic_number: e.target.value })}
+                    onChange={(e) => {
+                      // Allow numbers and dashes, and auto-format CNIC as 35201-1234567-1
+                      let val = e.target.value.replace(/[^0-9]/g, '');
+                      if (val.length > 5 && val.length <= 12) {
+                        val = val.slice(0, 5) + '-' + val.slice(5);
+                      } else if (val.length > 12) {
+                        val = val.slice(0, 5) + '-' + val.slice(5, 12) + '-' + val.slice(12, 13);
+                      }
+                      setFormData({ ...formData, cnic_number: val });
+                    }}
                     onFocus={() => setFocused('cnic_number')}
                     onBlur={() => setFocused('')}
                     placeholder="e.g. 35201-1234567-1"

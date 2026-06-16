@@ -34,7 +34,7 @@ class PyObjectId(str):
 class TravelerSignup(BaseModel):
     name: str
     email: EmailStr
-    password: str
+    password: str = Field(min_length=6)
 
 class TravelerLogin(BaseModel):
     email: EmailStr
@@ -54,7 +54,7 @@ class TravelerInDB(BaseModel):
 class GuideRegistration(BaseModel):
     fullName: str
     email: EmailStr
-    phone: str
+    phone: str = Field(min_length=10)
     city: str
     experience: int
     about: str
@@ -64,7 +64,7 @@ class GuideRegistration(BaseModel):
     profile_photo: str  # Required - URL/path to uploaded photo
     cnic_number: str  # New field
     cnic_photo: str   # New field (URL to uploaded image)
-    password: str
+    password: str = Field(min_length=6)
 
 class GuideLogin(BaseModel):
     email: EmailStr
